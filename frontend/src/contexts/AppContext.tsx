@@ -47,12 +47,12 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
     },
   });
 
-  // Query to fetch store based on userId
+  // Query to fetch store based on userId but only if userRole is "1"
   const { data: storeData } = useQuery(
     "fetchStore",
     () => apiClient.fetchMyStores(userId ?? ""),
     {
-      enabled: !!userId, // Only run if userId is available
+      enabled: !!userId && userRole === "1", // Only run if userId exists and userRole is "1"
       onSuccess: (data) => {
         if (data && data.length > 0) {
           setStoreId(data[0].store_id); // Set the first store's ID
@@ -71,7 +71,7 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
   };
 
   console.log(userId);
-    console.log(storeId);
+  console.log(storeId);
 
   return (
     <AppContext.Provider

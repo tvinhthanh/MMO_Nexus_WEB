@@ -20,16 +20,15 @@ const Header = () => {
               Trang Chủ
             </Link>
           </li>
-          <li>
-            <Link to="/sanpham" className="hover:text-green-400">
-              Sản Phẩm
-            </Link>
-          </li>
+
 
           {/* Conditional Rendering for different user roles */}
           {isLoggedIn && userRole == "1" ? (
             <>
               {/* For Admin (userRole = 1) */}
+              <Link to="/sanpham" className="hover:text-green-400">
+              Sản Phẩm
+            </Link>
               <li>
                 <Link to="/categories" className="hover:text-green-400">
                   Danh Mục
@@ -49,10 +48,14 @@ const Header = () => {
                 <SignOutButton />
               </li>
             </>
-          ) : isLoggedIn && userRole == "0" ? (
+          ) : isLoggedIn && userRole == "2" ? (
             <>
               {/* For User (userRole = 0) */}
-              
+              <li>
+            <Link to="/product" className="hover:text-green-400">
+              Sản Phẩm
+            </Link>
+          </li>
               <li>
                 <Link to="/my-orders" className="hover:text-green-400">
                   Đơn Hàng Của Tôi

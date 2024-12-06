@@ -286,6 +286,34 @@ export const getProductsByStore = async (storeId: string) => {
     throw error; // Re-throw error to be handled in the component
   }
 };
+export const addToCart = async (user_id: string, product_id: string) => {
+  try {
+    const cartData = {
+      user_id: user_id,
+      product_id: product_id,
+    };
+
+    const response = await fetch(`${API_BASE_URL}/api/carts`, {
+      method: "POST", // HTTP POST request
+      headers: {
+        "Content-Type": "application/json", // Content type is JSON
+      },
+      body: JSON.stringify(cartData), // Convert cart data to JSON
+    });
+
+    // Check if the response is successful (status code 2xx)
+    if (!response.ok) {
+      throw new Error(`Failed to add product to cart, status: ${response.status}`);
+    }
+
+    const data = await response.json(); // Parse the response as JSON
+    return data; // Return the response data (e.g., the new cart item)
+  } catch (error) {
+    console.error("Error adding product to cart:", error);
+    throw error; // Propagate the error for the calling function to handle
+  }
+};
+
 export const getAllProducts = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/products`);

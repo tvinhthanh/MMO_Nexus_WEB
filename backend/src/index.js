@@ -53,6 +53,8 @@ const authRoutes = require('./routes/auth');
 const categoryRoutes = require('./routes/catagory');
 const storeRoutes = require('./routes/myStore');
 const productRoutes = require('./routes/product');
+const cartRoutes = require('./routes/cart');
+
 const hotelRoutes = require('./routes/hotel');
 const MyHotelRoutes = require('./routes/myhotel');
 const bookingRoutes = require('./routes/booking');
@@ -62,7 +64,10 @@ app.use('/api/category', categoryRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/store', storeRoutes);
-app.use('/api/products', productRoutes);  // Đảm bảo sử dụng route đúng cho sản phẩm
+app.use('/api/products', productRoutes); 
+app.use('/api/carts', cartRoutes);
+
+
 app.use('/api/hotel', hotelRoutes);
 app.use('/api/my-hotels', MyHotelRoutes);
 app.use('/api/bookings', bookingRoutes);
@@ -87,6 +92,32 @@ app.post('/upload-image', upload.single('image'), (req, res) => {
       });
 });
 
+app.post('/',(req,res)=>{
+    const product_id = req.body.product_id;
+    const product_name = req.body.product_name;
+    const price = req.body.price;
+    let count = 0;
+    for (let i=0;i<req.session.cart.length;i++)
+    {
+        if (req.session.cart[i].product_id === product_id)
+        {
+            req.session.cart[i].quantity +=1;
+            count++;
+        }
+
+    }
+    if (count ===0)
+    {
+        const cart_data ={
+            product_id:product_id,
+            product_name:product_name,
+            price:price,
+            quantity:1,
+        }
+        req.sesion.cart.pust(cart_data)
+    }
+    res.redirect("/")
+})
 // Cung cấp dịch vụ ảnh tải lên (tùy chọn nếu bạn muốn phục vụ ảnh trước khi upload)
 app.use('/images', express.static(path.join(__dirname, 'uploads')));
 

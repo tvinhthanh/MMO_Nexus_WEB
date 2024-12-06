@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
 import * as apiClient from "../../api-client"; // Thư viện gọi API
 import { useAppContext } from "../../contexts/AppContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Themsp: React.FC = () => {
   const { storeId } = useAppContext();
@@ -165,14 +165,22 @@ const Themsp: React.FC = () => {
           />
         </div>
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            className="bg-blue-600 text-white py-2 px-4 rounded-lg"
-          >
-            Thêm sản phẩm
-          </button>
-        </div>
+        <div className="flex justify-end space-x-4">
+        <Link
+          to={`/sanpham`}
+          className="bg-black text-white py-2 px-4 rounded-lg"
+        >
+          Quay lại
+        </Link>
+
+        <button
+          type="submit"
+          className="bg-blue-600 text-white py-2 px-4 rounded-lg"
+        >
+          Thêm sản phẩm
+        </button>
+      </div>
+
       </form>
     </div>
   );

@@ -84,14 +84,21 @@ const Product = {
 
   // Lấy sản phẩm theo ID
   findById: async (id) => {
-    const query = "SELECT * FROM products WHERE product_id = ?";
-    try {
-      const [results] = await connection.execute(query, [id]);
-      return results[0];
-    } catch (error) {
-      console.error("Lỗi khi lấy sản phẩm:", error);
-      throw new Error("Không thể lấy sản phẩm.");
-    }
+      const query = "SELECT * FROM products WHERE product_id = ?";
+      try {
+        // Sử dụng destructuring để lấy `results` từ `connection.execute`
+        const [results] = await connection.execute(query, [id]);
+    
+        // Kiểm tra nếu không tìm thấy sản phẩm
+        if (results.length === 0) {
+          return null; // Hoặc throw new Error('Product not found');
+        }
+    
+        return results[0]; // Trả về sản phẩm đầu tiên trong kết quả
+      } catch (error) {
+        console.error("Lỗi khi lấy sản phẩm:", error);
+        throw new Error("Không thể lấy sản phẩm.");
+      }
   },
 
   // Lấy sản phẩm theo store_id

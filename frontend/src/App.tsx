@@ -24,6 +24,7 @@ import Danhmuc from "./pages/danhmuc/Danhmuc";
 import ThemDanhmuc from "./pages/danhmuc/ThemDanhmuc";
 import Sanpham from "./pages/products/Sanpham";
 import Themsp from "./pages/products/Themsanpham";
+import XemSanPham from "./pages/products/Xemsanpham";
 
 const App = () => {
   const { isLoggedIn, userRole, userId } = useAppContext();
@@ -59,7 +60,7 @@ const App = () => {
             {/* userRole 2 - User userRole 2 */}
             {userRole == "2" && (
               <>
-                <Route path="/categories" element={<Layout><Danhmuc /></Layout>} />
+                <Route path="/product" element={<Layout><XemSanPham /></Layout>} />
 
               </>
             )}

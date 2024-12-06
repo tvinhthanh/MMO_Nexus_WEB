@@ -3,7 +3,6 @@ import { useQuery, useMutation, useQueryClient } from "react-query";
 import { Link } from "react-router-dom";
 import * as apiClient from "../../api-client"; 
 import { useAppContext } from "../../contexts/AppContext";
-import Slider from "react-slick";
 
 const Sanpham: React.FC = () => {
   const { storeId } = useAppContext();
@@ -125,7 +124,7 @@ const Sanpham: React.FC = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-3xl font-bold">Danh sách sản phẩm</h1>
         <Link
-          to={`/addsanpham`}
+          to={`/themsanpham`}
           className="bg-black text-white text-xl font-bold p-2 hover:bg-black-500"
         >
           Thêm sản phẩm

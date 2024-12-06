@@ -4,104 +4,96 @@ import * as apiClient from "../../api-client";
 import { BsBuilding, BsMap } from "react-icons/bs";
 import { useAppContext } from "../../contexts/AppContext";
 
-const Danhmuc = () => {
-  const { storeId } = useAppContext();
+const MyStore = () => {
+  const { userId, storeId } = useAppContext();
   const navigate = useNavigate();
 
-  // Fetch categories data
-  const { data: categoryData, isLoading, isError } = useQuery(
-    "fetchCategories",
-    () => apiClient.getCategoriesByStore(storeId ?? ""),
-    {
-      onError: () => {
-        // Handle error state if necessary
-      },
-    }
+  const { data: storeData, isLoading, isError } = useQuery(
+    "fetchMyStore",
+    () => apiClient.fetchMyStores(userId ?? ""),
+    { onError: () => {} }
   );
 
-  const handleDelete = (categoryId: string) => {
-    // Confirm the deletion action
-    const confirmDelete = window.confirm("Bạn chắc chắn muốn xóa danh mục này?");
-
+  const handleDelete = (storeId: string) => {
+    const confirmDelete = window.confirm("Bạn chắc chắn muốn xóa cửa hàng này?");
     if (confirmDelete) {
-      // Call your API to delete the category
-      apiClient.deleteCategoryById(categoryId)
+      apiClient
+        .deleteStoreById(storeId)
         .then(() => {
-          alert("Danh mục đã được xóa thành công!");
-          // Optionally, you can redirect the user after deletion:
-          navigate("/danh-muc"); // Redirect to categories list or another page
+          alert("Cửa hàng đã được xóa thành công!");
+          navigate("/add-store"); // Điều hướng tới trang thêm cửa hàng
         })
-        .catch(error => {
-          console.error("Error deleting category:", error);
-          alert("Có lỗi xảy ra khi xóa danh mục.");
+        .catch((error) => {
+          console.error("Error deleting store:", error);
+          alert("Có lỗi xảy ra khi xóa cửa hàng.");
         });
     }
   };
 
-  if (isLoading) {
-    return <span>Loading...</span>;
-  }
+  if (isLoading) return <span>Đang tải...</span>;
 
-  if (isError || !categoryData) {
+  if (isError || !storeData || storeData.length === 0) {
     return (
-      <span>
-        Không tìm thấy danh mục
+      <div className="text-center py-10">
+        <h2 className="text-xl font-bold">Bạn chưa có cửa hàng nào</h2>
         <Link
-          to="/add-category"
-          className="flex bg-black text-white text-xl font-bold p-2 hover:bg-red"
+          to="/add-store"
+          className="inline-block bg-blue-600 text-white px-6 py-2 rounded-md mt-4 hover:bg-blue-500"
         >
-          Thêm danh mục
+          Thêm cửa hàng mới
         </Link>
-      </span>
+      </div>
     );
   }
 
+  const store = storeData[0]; // Vì mỗi user chỉ có một cửa hàng
+
   return (
-    <div className="space-y-5">
-      <span className="flex justify-between">
-        <h1 className="text-3xl font-bold">Danh mục của tôi</h1>
-      </span>
-      <div className="grid grid-cols-1 gap-8">
-        {categoryData.map((category: any) => (
-          <div
-            data-testid="category-card"
-            key={category.category_id}
-            className="flex flex-col justify-between border border-slate-300 rounded-lg p-8 gap-5"
-          >
-            <h2 className="text-2xl font-bold">{category.category_name}</h2>
-
-            <p className="text-sm">{category.description}</p>
-
-            <div className="grid grid-cols-2 gap-2">
-              <div className="border border-slate-300 rounded-sm p-3 flex items-center">
-                <BsMap className="mr-1" />
-                Created At: {new Date(category.createdAt).toLocaleDateString()}
-              </div>
-              <div className="border border-slate-300 rounded-sm p-3 flex items-center">
-                <BsBuilding className="mr-1" />
-                Updated At: {new Date(category.updatedAt).toLocaleDateString()}
-              </div>
+    <div className="max-w-4xl mx-auto py-10 px-4">
+      <h1 className="text-3xl font-bold text-gray-800 mb-6">Thông tin cửa hàng</h1>
+      <div className="border border-gray-300 rounded-lg shadow-md overflow-hidden flex items-center">
+        {/* Hình ảnh cửa hàng bên trái */}
+        <div className="w-1/3 p-4">
+          {store.image ? (
+            <img
+              src={store.image}
+              alt={store.store_name}
+              className="w-full h-full object-cover rounded-lg"
+            />
+          ) : (
+            <div className="w-full h-full bg-gray-200 flex items-center justify-center rounded-lg">
+              <span className="text-gray-500">No Image Available</span>
             </div>
+          )}
+        </div>
 
-            <span className="flex justify-end space-x-4">
-              <Link
-                to={`/edit-category/${category.category_id}`} // Link to edit category
-                className="flex bg-black text-white text-xl font-bold p-2 hover:bg-green-500"
-              >
-                Chỉnh sửa
-              </Link>
-              <button
-                onClick={() => handleDelete(category.category_id)} // Function to handle the delete action
-                className="flex bg-black text-white text-xl font-bold p-2 hover:bg-red-500"
-              >
-                Xóa danh mục
-              </button>
-            </span>
+        {/* Thông tin cửa hàng bên phải */}
+        <div className="w-2/3 p-6 space-y-4">
+          <h2 className="text-2xl font-bold text-gray-800">{store.store_name}</h2>
+          <p className="text-gray-600 flex items-center">
+            <BsMap className="mr-2 text-blue-500" /> {store.address}
+          </p>
+          <p className="text-gray-600 flex items-center">
+            <BsBuilding className="mr-2 text-green-500" /> Store ID: {store.store_id}
+          </p>
+          <div className="flex justify-end space-x-4">
+            <Link
+              to={`/edit-store/${store.store_id}`}
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-500"
+            >
+              Chỉnh sửa
+            </Link>
+            <button
+              onClick={() => handleDelete(store.store_id)}
+              className="bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-500"
+            >
+              Xóa cửa hàng
+            </button>
           </div>
-        ))}
+        </div>
       </div>
     </div>
   );
 };
 
-export default Danhmuc;
+export default MyStore;
