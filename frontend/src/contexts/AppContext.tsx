@@ -7,64 +7,60 @@ import { loadStripe, Stripe } from "@stripe/stripe-js";
 // Stripe public key for loading Stripe
 const STRIPE_PUB_KEY = import.meta.env.VITE_STRIPE_PUB_KEY || "";
 
-// Type definition for Toast message
+// Khai báo Toast message
 type ToastMessage = {
   message: string;
   type: "SUCCESS" | "ERROR";
 };
 
-// AppContext type definition
+//Khai báo AppContext
 type AppContext = {
   showToast: (toastMessage: ToastMessage) => void;
   isLoggedIn: boolean;
   stripePromise: Promise<Stripe | null>;
   userId: string | null;
   userRole: string | null;
-  storeId: string | null;  // Added storeId to context
-  setUserData: (id: string, userRole: string) => void; // Function to set user data in context
-  setStoreId: (storeId: string) => void; // Function to set storeId in context
+  storeId: string | null;
+  setUserData: (id: string, userRole: string) => void; 
+  setStoreId: (storeId: string) => void; 
 };
 
 const AppContext = React.createContext<AppContext | undefined>(undefined);
 
-// Initialize Stripe promise if the key exists
+// Khởi tạo Stripe promise if the key exists
 const stripePromise = STRIPE_PUB_KEY ? loadStripe(STRIPE_PUB_KEY) : Promise.resolve(null);
 
 export const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [toast, setToast] = useState<ToastMessage | undefined>(undefined);
   const [userId, setUserId] = useState<string | null>(null);
   const [userRole, setUserRole] = useState<string | null>(null);
-  const [storeId, setStoreId] = useState<string | null>(null); // Added setter function for storeId
+  const [storeId, setStoreId] = useState<string | null>(null);
 
-  // Query to validate the token and get user information
   const { isError, isLoading, data } = useQuery("validateToken", apiClient.validateToken, {
     retry: false,
     onSuccess: (data) => {
       if (data?.userId && data?.userRole) {
-        setUserId(data.userId); // Set userId after successful token validation
-        setUserRole(data.userRole); // Set userRole after successful token validation
+        setUserId(data.userId); 
+        setUserRole(data.userRole); 
       }
     },
   });
 
-  // Query to fetch store based on userId but only if userRole is "1"
+  //Thực hiện khi userRole là "1"
   const { data: storeData } = useQuery(
     "fetchStore",
     () => apiClient.fetchMyStores(userId ?? ""),
     {
-      enabled: !!userId && userRole === "1", // Only run if userId exists and userRole is "1"
+      enabled: !!userId && userRole == "1",
       onSuccess: (data) => {
         if (data && data.length > 0) {
-          setStoreId(data[0].store_id); // Set the first store's ID
+          setStoreId(data[0].store_id);
         }
       },
     }
   );
 
-  // Determine if the user is logged in based on the error/loading state
   const isLoggedIn = !isError && !isLoading;
-
-  // Function to update user data in context
   const setUserData = (id: string, userRole: string) => {
     setUserId(id);
     setUserRole(userRole);
@@ -77,22 +73,22 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
     <AppContext.Provider
       value={{
         showToast: (toastMessage) => {
-          setToast(toastMessage); // Display toast messages
+          setToast(toastMessage); 
         },
-        isLoggedIn, // User login status
-        stripePromise, // Stripe promise for payment integration
-        userId, // User ID from the context
-        userRole, // User userRole from the context
-        storeId, // Current storeId
-        setStoreId, // Function to set storeId
-        setUserData, // Set user data function for updating the context
+        isLoggedIn,
+        stripePromise, 
+        userId, 
+        userRole,
+        storeId, 
+        setStoreId, 
+        setUserData,
       }}
     >
       {toast && (
         <Toast
           message={toast.message}
           type={toast.type}
-          onClose={() => setToast(undefined)} // Close toast on close action
+          onClose={() => setToast(undefined)}
         />
       )}
       {children} {/* Render child components */}

@@ -8,7 +8,6 @@ const Danhmuc: React.FC = () => {
   const { storeId } = useAppContext();
   const queryClient = useQueryClient();
 
-  // State for edit dialog
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<any>(null);
   const [editName, setEditName] = useState("");
@@ -18,7 +17,7 @@ const Danhmuc: React.FC = () => {
     return <span>Mã cửa hàng bị mất hoặc đang không tìm thấy.</span>;
   }
 
-  // Fetch categories
+  // lấy danh mục
   const { data: categoryData, isLoading, isError } = useQuery(
     ['fetchMyCategories', storeId],
     () => apiClient.getCategoriesByStore(storeId),
@@ -29,7 +28,6 @@ const Danhmuc: React.FC = () => {
     }
   );
 
-  // Delete mutation
   const deleteCategoryMutation = useMutation(
     (categoryId: string) => apiClient.deleteCategoryById(categoryId),
     {
@@ -42,7 +40,6 @@ const Danhmuc: React.FC = () => {
     }
   );
 
-  // Update mutation
   const updateCategoryMutation = useMutation(
     (data: { category_id: string; category_name: string; description: string }) =>
       apiClient.updateCategory(data),
@@ -59,14 +56,12 @@ const Danhmuc: React.FC = () => {
     }
   );
 
-  // Handle delete
   const handleDelete = (categoryId: number) => {
     if (window.confirm("Are you sure you want to delete this category?")) {
       deleteCategoryMutation.mutate(categoryId.toString());
     }
   };
 
-  // Open edit dialog
   const handleEdit = (category: any) => {
     setSelectedCategory(category);
     setEditName(category.category_name);
@@ -74,7 +69,6 @@ const Danhmuc: React.FC = () => {
     setIsDialogOpen(true);
   };
 
-  // Submit edit
   const handleEditSubmit = () => {
     if (!selectedCategory) return;
 
@@ -96,7 +90,7 @@ const Danhmuc: React.FC = () => {
           <p className="text-sm text-gray-500">Vui lòng thêm danh mục mới để quản lý.</p>
         </div>
         <Link
-          to={`/store/${storeId}/add-category`}
+          to={`/${storeId}/add-danhmuc`}
           className="bg-blue-600 text-white text-lg font-bold py-2 px-4 rounded-lg hover:bg-blue-500"
         >
           Thêm danh mục

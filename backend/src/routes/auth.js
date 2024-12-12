@@ -5,6 +5,7 @@ const verifyToken = require("../middleware/auth");
 const User = require('../models/user');
 const jwt = require('jsonwebtoken'); // Add this line at the top of your file
 const bcrypt = require('bcryptjs'); // Ensure bcrypt is imported as well
+const Carts = require('../models/cart');
 const router = express.Router();
 
 const validateToken = (req, res, next) => {
@@ -67,10 +68,16 @@ const validateToken = (req, res, next) => {
           address,
           create_at: new Date().toISOString(),
         };
-  
-        // Save the new user to the database
-        const userId = await User.create(newUser);  // Lưu người dùng vào DB
-  
+        
+        const userId = await User.create(newUser);
+         // Nếu role là 2, tạo cart mới
+      if (role == 2) {
+        await connection.execute(
+          'INSERT INTO carts (user_id) VALUES (?)', 
+          [userId]
+        );
+        console.log("Cart created for user:", userId);
+      }
         // Generate JWT token
         const token = jwt.sign({ userId, role: newUser.role }, process.env.JWT_SECRET_KEY, { expiresIn: "1h" });
   
@@ -85,6 +92,7 @@ const validateToken = (req, res, next) => {
       }
     }
   );
+  
   // Login user endpoint
   router.post(
     "/login",

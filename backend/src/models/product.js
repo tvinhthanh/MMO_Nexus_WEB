@@ -83,7 +83,7 @@ const Product = {
   },
 
   // Lấy sản phẩm theo ID
-  findById: async (id) => {
+  findById:  async (id) => {
       const query = "SELECT * FROM products WHERE product_id = ?";
       try {
         // Sử dụng destructuring để lấy `results` từ `connection.execute`

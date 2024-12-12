@@ -30,6 +30,38 @@ router.get('/:id', async (req, res) => {
 });
 
 // Route to create a new category
+router.post('/', async (req, res) => {
+  const { category_name, description, store_id } = req.body; // Lấy dữ liệu từ body của request
+
+  // Kiểm tra thông tin đầu vào
+  if (!category_name || !description || !store_id) {
+    return res.status(400).json({
+      message: 'Vui lòng cung cấp đầy đủ thông tin: category_name, description và store_id.',
+    });
+  }
+
+  try {
+    // Tạo mới danh mục trong cơ sở dữ liệu
+    const newCategory = await Category.create({
+      category_name,
+      description,
+      store_id,
+    });
+
+    // Trả về kết quả sau khi tạo thành công
+    res.status(201).json({
+      message: 'Danh mục đã được tạo thành công',
+      category: newCategory,
+    });
+  } catch (err) {
+    console.error('Lỗi khi tạo danh mục:', err);
+    res.status(500).json({
+      message: 'Đã xảy ra lỗi khi tạo danh mục',
+      error: err.message,
+    });
+  }
+});
+
 router.put("/:id", async (req, res) => {
   const { id } = req.params; // Lấy category_id từ params
   const { category_name, description } = req.body; // Lấy thông tin cập nhật từ body
@@ -42,6 +74,7 @@ router.put("/:id", async (req, res) => {
   }
 
   try {
+    // Cập nhật danh mục
     const updatedRows = await Category.update(id, { category_name, description });
 
     if (updatedRows === 0) {
@@ -59,29 +92,6 @@ router.put("/:id", async (req, res) => {
       message: "Đã xảy ra lỗi khi cập nhật danh mục.",
       error: err.message,
     });
-  }
-});
-  
-
-// Route to update an existing category
-router.put('/:id', async (req, res) => {
-  const categoryId = req.params.id;
-  const categoryData = req.body;
-
-  if (!categoryData.category_name || !categoryData.description || !categoryData.store_id) {
-    return res.status(400).json({ message: 'Vui lòng cung cấp đầy đủ thông tin: category_name, description và store_id.' });
-  }
-
-  try {
-    const affectedRows = await Category.update(categoryId, categoryData);
-    if (affectedRows > 0) {
-      res.json({ message: 'Danh mục đã được cập nhật' });
-    } else {
-      res.status(404).json({ message: 'Danh mục không tìm thấy' });
-    }
-  } catch (err) {
-    console.error('Lỗi khi cập nhật danh mục:', err);
-    res.status(500).json({ message: 'Lỗi khi cập nhật danh mục', error: err.message });
   }
 });
 

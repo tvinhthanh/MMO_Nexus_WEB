@@ -4,10 +4,9 @@ const router = express.Router();
 const { upload, uploadToCloudinary } = require('../middleware/upload'); // Import từ middleware
 const connection = require("../config/database")
 
-
 // POST route để tạo sản phẩm mới
 router.post('/', upload.single('image'), async (req, res) => {
-    const { product_name, price, description,stock, category_id, store_id } = req.body;
+    const { product_name, price, description, stock, category_id, store_id } = req.body;
   
     // Kiểm tra thông tin đầu vào
     if (!product_name || !price || !description || !category_id || !store_id) {
@@ -33,8 +32,8 @@ router.post('/', upload.single('image'), async (req, res) => {
   
       // Truyền thông tin sản phẩm vào query SQL
       const query = `
-        INSERT INTO products (product_name, price, description, image,stock, category_id, store_id, createdAt)
-        VALUES (?, ?, ?, ?,? ,?, ?, CURRENT_TIMESTAMP)
+        INSERT INTO products (product_name, price, description, image, stock, category_id, store_id, createdAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
       `;
   
       // Thực thi query
@@ -62,14 +61,11 @@ router.post('/', upload.single('image'), async (req, res) => {
       console.error('Lỗi khi tải hình ảnh lên Cloudinary:', error);
       res.status(500).json({ message: 'Lỗi khi tải hình ảnh lên Cloudinary', error: error.message });
     }
-  });
-  
-  
-  
+});
+
 // Lấy tất cả sản phẩm
 router.get("/", (req, res) => {
     try {
-      // Truy vấn cơ sở dữ liệu để lấy tất cả sản phẩm
       const query = 'SELECT * FROM products';
   
       connection.query(query, (err, results) => {
@@ -78,29 +74,35 @@ router.get("/", (req, res) => {
           return res.status(500).json({ message: 'Có lỗi xảy ra. Vui lòng thử lại.', error: err.message });
         }
   
-        // Trả về kết quả sản phẩm
         res.status(200).json(results);
       });
     } catch (error) {
       console.error('Lỗi khi xử lý yêu cầu:', error);
       return res.status(500).json({ message: 'Có lỗi xảy ra. Vui lòng thử lại.', error: error.message });
     }
-  });
+});
 
 // Lấy chi tiết sản phẩm theo ID
 router.get("/:id", async (req, res) => {
   try {
-    const productId = req.params.id;
-    const product = await Product.findById(productId);
+    const id = req.params.id;
+    const query = 'SELECT * FROM products WHERE product_id = ?';
 
-    if (!product) {
-      return res.status(404).json({ message: "Sản phẩm không tồn tại." });
-    }
+    connection.query(query, [id], (err, results) => {
+      if (err) {
+        console.error('Lỗi khi lấy sản phẩm:', err);
+        return res.status(500).json({ message: 'Có lỗi xảy ra. Vui lòng thử lại.', error: err.message });
+      }
 
-    res.status(200).json(product);
+      if (results.length > 0) {
+        return res.status(200).json(results[0]);
+      }
+
+      return res.status(404).json({ message: 'Sản phẩm không tồn tại' });
+    });
   } catch (error) {
-    console.error("Lỗi khi lấy sản phẩm:", error);
-    res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại." });
+    console.error('Lỗi khi xử lý yêu cầu:', error);
+    return res.status(500).json({ message: 'Có lỗi xảy ra. Vui lòng thử lại.', error: error.message });
   }
 });
 
@@ -108,13 +110,11 @@ router.get("/:id", async (req, res) => {
 router.get('/store/:storeId', (req, res) => {
     const storeId = req.params.storeId;
   
-    // Kiểm tra nếu storeId là hợp lệ
     if (!storeId) {
       return res.status(400).json({ message: 'storeId không hợp lệ.' });
     }
   
     try {
-      // Truy vấn cơ sở dữ liệu để lấy các sản phẩm của store_id
       const query = 'SELECT * FROM products WHERE store_id = ?';
   
       connection.query(query, [storeId], (err, results) => {
@@ -123,19 +123,17 @@ router.get('/store/:storeId', (req, res) => {
           return res.status(500).json({ message: 'Lỗi server khi lấy sản phẩm', error: err.message });
         }
   
-        // Nếu không có sản phẩm nào cho storeId
         if (results.length === 0) {
           return res.status(404).json({ message: 'Không có sản phẩm cho storeId này' });
         }
   
-        // Trả về các sản phẩm
         res.json(results);
       });
     } catch (error) {
       console.error('Lỗi khi xử lý yêu cầu:', error);
       return res.status(500).json({ message: 'Lỗi khi xử lý yêu cầu', error: error.message });
     }
-  });
+});
 
 // Cập nhật thông tin sản phẩm
 router.put("/:id", async (req, res) => {
@@ -143,7 +141,6 @@ router.put("/:id", async (req, res) => {
     const productId = req.params.id;
     const { product_name, category_id, store_id, price, stock, description, image } = req.body;
 
-    // Kiểm tra dữ liệu đầu vào
     if (!product_name || !category_id || !store_id || price <= 0 || stock < 0 || !image) {
       return res.status(400).json({ message: "Vui lòng điền đầy đủ thông tin sản phẩm." });
     }
@@ -185,6 +182,29 @@ router.delete("/:id", async (req, res) => {
   } catch (error) {
     console.error("Lỗi khi xóa sản phẩm:", error);
     res.status(500).json({ message: "Có lỗi xảy ra. Vui lòng thử lại." });
+  }
+});
+
+router.get('/search', async (req, res) => {
+  const { query } = req.query;  // Lấy query parameter "query" từ URL
+
+  if (!query || query.trim() === "") {
+    return res.status(400).json({ message: "Tên sản phẩm không được để trống" });
+  }
+
+  try {
+    // Truy vấn cơ sở dữ liệu để tìm các sản phẩm có tên tương tự với query
+    const searchQuery = `%${query}%`;  // Thêm % để tìm kiếm với mọi tên chứa query
+    const result = await db.query('SELECT * FROM products WHERE name LIKE ?', [searchQuery]);
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Không tìm thấy sản phẩm nào" });
+    }
+
+    res.status(200).json(result);  // Trả về danh sách sản phẩm tìm được
+  } catch (error) {
+    console.error('Lỗi khi tìm kiếm sản phẩm:', error);
+    return res.status(500).json({ message: "Lỗi khi tìm kiếm sản phẩm" });
   }
 });
 

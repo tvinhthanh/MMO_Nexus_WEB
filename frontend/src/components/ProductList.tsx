@@ -28,24 +28,22 @@ const ProductList: React.FC = () => {
     getProducts();
   }, []);
 
-  // Function to handle adding/removing products from the favorites
   const toggleFavorite = (product: Product) => {
     setFavorites((prevFavorites) => {
       if (prevFavorites.some((fav) => fav.product_id === product.product_id)) {
-        return prevFavorites.filter((fav) => fav.product_id !== product.product_id); // Remove from favorites
+        return prevFavorites.filter((fav) => fav.product_id !== product.product_id); // xóa khỏi danh sách yêu thích
       } else {
-        return [...prevFavorites, product]; // Add to favorites
+        return [...prevFavorites, product]; // Thêm danh sách yêu thích
       }
     });
   };
 
-  // Function to handle adding/removing products from the cart
   const toggleCart = (product: Product) => {
     setCart((prevCart) => {
       if (prevCart.some((item) => item.product_id === product.product_id)) {
-        return prevCart.filter((item) => item.product_id !== product.product_id); // Remove from cart
+        return prevCart.filter((item) => item.product_id !== product.product_id); 
       } else {
-        return [...prevCart, product]; // Add to cart
+        return [...prevCart, product]; // Thêm vào giỏ hàng
       }
     });
   };
@@ -76,7 +74,6 @@ const ProductList: React.FC = () => {
                 onClick={() => toggleFavorite(product)}
                 className="mt-4 py-2 px-4 bg-transparent text-red-500 rounded"
               >
-                {/* Hiển thị trái tim đầy nếu sản phẩm trong danh sách yêu thích */}
                 <span className="text-2xl">
                   {favorites.some((fav) => fav.product_id === product.product_id) ? '❤️' : '🤍'}
                 </span>

@@ -9,15 +9,15 @@ const Themsp: React.FC = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // State for form input
+  // useState dữ liệu nhập vào
   const [productName, setProductName] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [price, setPrice] = useState<number>(0);
   const [stock, setStock] = useState<number>(0);
   const [categoryId, setCategoryId] = useState<number>(0);
-  const [image, setImage] = useState<File | null>(null);  // Changed to hold a single file
+  const [image, setImage] = useState<File | null>(null);
 
-  // Fetch categories
+  // lấy danh mục
   const { data: categories, isLoading: isCategoriesLoading, isError: isCategoriesError } = useQuery(
     ['fetchCategories', storeId],
     () => apiClient.getCategoriesByStore(storeId as string), // API lấy danh mục theo cửa hàng
@@ -30,16 +30,16 @@ const Themsp: React.FC = () => {
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
-      setImage(event.target.files[0]);  // Store only one image
+      setImage(event.target.files[0]); 
     }
   };
 
   // Mutation to create product
   const createProductMutation = useMutation(
-    async (formData: FormData) => apiClient.createProduct(formData), // API để tạo sản phẩm
+    async (formData: FormData) => apiClient.createProduct(formData), 
     {
       onSuccess: () => {
-        queryClient.invalidateQueries(['fetchProducts', storeId]); // Invalidate cache to refetch data
+        queryClient.invalidateQueries(['fetchProducts', storeId]); 
         alert("Sản phẩm đã được thêm thành công!");
         navigate('/sanpham')
       },
@@ -67,11 +67,8 @@ const Themsp: React.FC = () => {
       formData.append("description", description.trim());
       formData.append("category_id", categoryId.toString());
       formData.append("store_id", storeId as string );
-      
-      // Append the single image to FormData
-      formData.append("image", image, image.name);  // Append the selected image
+      formData.append("image", image, image.name);
 
-      // Call mutation to create product
       createProductMutation.mutate(formData);
     } catch (error) {
       console.error('Error submitting form:', error);

@@ -27,7 +27,6 @@ const Sanpham: React.FC = () => {
     }
   );
 
-  // Delete mutation
   const deleteProductMutation = useMutation(
     (productId: string) => apiClient.deleteProductById(productId),
     {
@@ -53,15 +52,12 @@ const Sanpham: React.FC = () => {
 //       },
 //     }
 //   );
-
-  // Handle delete
   const handleDelete = (productId: number) => {
     if (window.confirm("Bạn có chắc muốn xóa sản phẩm này?")) {
       deleteProductMutation.mutate(productId.toString());
     }
   };
 
-  // Open edit dialog
   const handleEdit = (product: any) => {
     setSelectedProduct(product);
     setEditName(product.name);
@@ -169,8 +165,6 @@ const Sanpham: React.FC = () => {
           </tbody>
         </table>
       </div>
-
-      {/* Edit Dialog */}
       {isDialogOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">

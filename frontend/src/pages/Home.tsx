@@ -1,136 +1,217 @@
-import React, { useEffect, useState } from 'react';
-import { getAllProducts } from '../api-client';
-
-interface Product {
-  product_id: number;
-  product_name: string;
-  price: number;
-  description: string;
-  image: string;
-}
+import React, { useState } from "react";
+import { useQuery } from "react-query";
+import { useNavigate } from "react-router-dom"; // Dùng useNavigate để điều hướng
+import * as apiClient from "../api-client";
+import { useAppContext } from "../contexts/AppContext";
 
 const Home: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [favorites, setFavorites] = useState<Product[]>([]);
-  const [cart, setCart] = useState<Product[]>([]);
-  const [error, setError] = useState<string>('');
+  const { userId } = useAppContext(); // Lấy userId từ context
+  const navigate = useNavigate(); // Khởi tạo useNavigate
+  const [cart, setCart] = useState<{
+    product_id: string;
+    product_name: string;
+    product_price: number;
+    quantity: number;
+    image: string;
+    store_id: string;
+  }[]>([]);
+  const [favorites, setFavorites] = useState<{
+    product_id: string;
+    product_name: string;
+    product_price: number;
+    quantity: number;
+    image: string;
+    store_id: string;
+  }[]>([]);
 
-  useEffect(() => {
-    const getProducts = async () => {
-      try {
-        const data = await getAllProducts();
-        setProducts(data);
-      } catch (err) {
-        setError((err as Error).message);
+  // Fetch danh sách tất cả sản phẩm
+  const { data: productData, isLoading, isError } = useQuery(
+    "fetchAllProducts",
+    apiClient.getAllProducts, // Hàm API để lấy danh sách sản phẩm
+    {
+      onError: (error) => {
+        console.error("Error fetching products:", error);
+      },
+    }
+  );
+
+  // Hàm xử lý thêm sản phẩm vào giỏ hàng
+  const handleAddToCart = async (product: {
+    product_id: string;
+    product_name: string;
+    product_price: number;
+    quantity: number;
+    image: string;
+    store_id: string;
+  }) => {
+    const productInCart = cart.find((item) => item.product_id === product.product_id);
+
+    if (productInCart) {
+      alert("Sản phẩm đã có trong giỏ hàng.");
+      return;
+    }
+
+    try {
+      const response = await apiClient.addToCart(
+        userId as string,
+        product.product_id,
+        product.product_name,
+        product.quantity,
+        product.product_price,
+        product.image,
+        product.store_id
+      );
+      if (response.success) {
+        setCart((prevCart) => [...prevCart, product]);
+        alert("Đã thêm sản phẩm vào giỏ hàng!");
+      } else {
+        alert("Thêm sản phẩm vào giỏ hàng thất bại.");
       }
-    };
+    } catch (error) {
+      console.error("Error adding product to cart:", error);
+      alert("Có lỗi xảy ra khi thêm sản phẩm vào giỏ hàng.");
+    }
+  };
 
-    getProducts();
-  }, []);
-
-  // Function to handle adding/removing products from the favorites
-  const toggleFavorite = (product: Product) => {
+  // Hàm xử lý thêm/xóa sản phẩm khỏi danh sách yêu thích
+  const toggleFavorite = (product: {
+    product_id: string;
+    product_name: string;
+    product_price: number;
+    quantity: number;
+    image: string;
+    store_id: string;
+  }) => {
     setFavorites((prevFavorites) => {
-      if (prevFavorites.some((fav) => fav.product_id === product.product_id)) {
-        return prevFavorites.filter((fav) => fav.product_id !== product.product_id); // Remove from favorites
+      const isAlreadyFavorite = prevFavorites.some((fav) => fav.product_id === product.product_id);
+      if (isAlreadyFavorite) {
+        return prevFavorites.filter((fav) => fav.product_id !== product.product_id); // Xóa khỏi yêu thích
       } else {
-        return [...prevFavorites, product]; // Add to favorites
+        return [...prevFavorites, product]; // Thêm vào yêu thích
       }
     });
   };
 
-  // Function to handle adding/removing products from the cart
-  const toggleCart = (product: Product) => {
-    setCart((prevCart) => {
-      if (prevCart.some((item) => item.product_id === product.product_id)) {
-        return prevCart.filter((item) => item.product_id !== product.product_id); // Remove from cart
-      } else {
-        return [...prevCart, product]; // Add to cart
-      }
-    });
+  // Hàm xử lý khi người dùng nhấn "Xem chi tiết"
+  const handleViewDetail = (productId: string) => {
+    navigate(`/product/${productId}`); // Điều hướng đến trang chi tiết sản phẩm
   };
 
-  if (error) {
-    return <div className="text-red-500">{error}</div>;
+  if (isLoading) return <span>Đang tải sản phẩm...</span>;
+
+  if (isError || !productData || productData.length === 0) {
+    return (
+      <div className="text-center py-10">
+        <h2 className="text-xl font-bold">Không có sản phẩm nào trong hệ thống</h2>
+      </div>
+    );
   }
 
   return (
-    <div className="container mx-auto p-5">
-      <h1 className="text-3xl font-bold mb-5">Danh sách sản phẩm</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {products.map((product) => (
+    <div className="max-w-7xl mx-auto py-10 px-4">
+      <h1 className="text-3xl font-bold mb-6">Danh sách tất cả sản phẩm</h1>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {productData.map((product: any) => (
           <div
             key={product.product_id}
-            className="border rounded-lg p-4 shadow-lg flex flex-col items-center"
+            className="border border-gray-300 rounded-lg p-4 shadow-md bg-white"
           >
-            <img
-              src={product.image}
-              alt={product.product_name}
-              className="w-40 h-40 object-cover mb-4"
-            />
-            <h2 className="text-xl font-semibold">{product.product_name}</h2>
-            <p className="text-red-500 font-bold">{product.price}đ</p>
-            <p className="text-gray-500">{product.description}</p>
-            <div className="flex space-x-2">
-              <button
-                onClick={() => toggleFavorite(product)}
-                className="mt-4 py-2 px-4 bg-transparent text-red-500 rounded"
-              >
-                {/* Hiển thị trái tim đầy nếu sản phẩm trong danh sách yêu thích */}
-                <span className="text-2xl">
-                  {favorites.some((fav) => fav.product_id === product.product_id) ? '❤️' : '🤍'}
-                </span>
-              </button>
-              <button
-                onClick={() => toggleCart(product)}
-                className="mt-4 py-2 px-4 bg-green-500 text-white rounded"
-              >
-                {cart.some((item) => item.product_id === product.product_id)
-                  ? 'Bỏ vào giỏ hàng'
-                  : 'Thêm vào giỏ hàng'}
-              </button>
+            {/* Hình ảnh sản phẩm */}
+            <div className="w-full h-40 overflow-hidden bg-gray-100 flex items-center justify-center mb-4">
+              {product.image ? (
+                <img
+                  src={product.image}
+                  alt={product.product_name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-gray-500">Chưa có hình ảnh</span>
+              )}
             </div>
+
+            {/* Thông tin sản phẩm */}
+            <h3 className="text-lg font-bold">Tên: {product.product_name}</h3>
+            <p className="text-gray-600">Giá: {product.price} VND</p>
+            <p className="text-gray-600">Tồn kho: {product.stock}</p>
+            <p className="text-gray-600">Mô tả: {product.description}</p>
+
+            {/* Nút Add to Cart */}
+            <button
+              onClick={() =>
+                handleAddToCart({
+                  product_id: product.product_id,
+                  product_name: product.product_name,
+                  product_price: product.price,
+                  quantity: 1, // Số lượng mặc định là 1
+                  image: product.image,
+                  store_id: product.store_id,
+                })
+              }
+              className="mt-4 py-2 px-4 bg-green-500 text-white rounded"
+            >
+              Thêm vào giỏ hàng
+            </button>
+
+            {/* Nút Add to Favorites */}
+            <button
+              onClick={() => toggleFavorite({
+                product_id: product.product_id,
+                product_name: product.product_name,
+                product_price: product.price,
+                quantity: 1, // Số lượng mặc định là 1
+                image: product.image,
+                store_id: product.store_id,
+              })}
+              className="mt-4 py-2 px-4 bg-transparent text-red-500 rounded"
+            >
+              {/* Hiển thị trái tim đầy nếu sản phẩm trong danh sách yêu thích */}
+              <span className="text-2xl">
+                {favorites.some((fav) => fav.product_id === product.product_id) ? '❤️' : '🤍'}
+              </span>
+            </button>
+
+            {/* Nút Xem chi tiết */}
+            <button
+              onClick={() => handleViewDetail(product.product_id)}
+              className="mt-4 py-2 px-4 bg-blue-500 text-white rounded"
+            >
+              Xem chi tiết
+            </button>
           </div>
         ))}
       </div>
 
-      <h1 className="text-3xl font-bold mt-10 mb-5">Danh sách yêu thích</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {favorites.map((product) => (
-          <div
-            key={product.product_id}
-            className="border rounded-lg p-4 shadow-lg flex flex-col items-center"
-          >
-            <img
-              src={product.image}
-              alt={product.product_name}
-              className="w-40 h-40 object-cover mb-4"
-            />
-            <h2 className="text-xl font-semibold">{product.product_name}</h2>
-            <p className="text-red-500 font-bold">{product.price}đ</p>
-            <p className="text-gray-500">{product.description}</p>
-          </div>
-        ))}
-      </div>
+      {/* Hiển thị danh sách yêu thích */}
+      {favorites.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold mb-4">Danh sách yêu thích</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {favorites.map((product) => (
+              <div
+                key={product.product_id}
+                className="border border-gray-300 rounded-lg p-4 shadow-md bg-white"
+              >
+                {/* Hình ảnh sản phẩm yêu thích */}
+                <div className="w-full h-40 overflow-hidden bg-gray-100 flex items-center justify-center mb-4">
+                  {product.image ? (
+                    <img
+                      src={product.image}
+                      alt={product.product_name}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <span className="text-gray-500">Chưa có hình ảnh</span>
+                  )}
+                </div>
 
-      <h1 className="text-3xl font-bold mt-10 mb-5">Danh sách giỏ hàng</h1>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {cart.map((product) => (
-          <div
-            key={product.product_id}
-            className="border rounded-lg p-4 shadow-lg flex flex-col items-center"
-          >
-            <img
-              src={product.image}
-              alt={product.product_name}
-              className="w-40 h-40 object-cover mb-4"
-            />
-            <h2 className="text-xl font-semibold">{product.product_name}</h2>
-            <p className="text-red-500 font-bold">{product.price}đ</p>
-            <p className="text-gray-500">{product.description}</p>
+                {/* Thông tin sản phẩm yêu thích */}
+                <h3 className="text-lg font-bold">{product.product_name}</h3>
+                <p className="text-gray-600">Giá: {product.product_price} VND</p>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      )}
     </div>
   );
 };

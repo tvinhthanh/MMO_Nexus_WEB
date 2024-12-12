@@ -19,7 +19,7 @@ const Footer = () => {
 
         {/* Copyright */}
         <div className="text-sm mt-4 md:mt-0 text-center md:text-right">
-          &copy; {new Date().getFullYear()} Trần Quốc Nam và Phạm Anh Tuấn. All rights reserved.
+          &copy; {new Date().getFullYear()} Trần Quốc Nam và Ngô Tấn Hảo. All rights reserved.
         </div>
       </div>
     </footer>

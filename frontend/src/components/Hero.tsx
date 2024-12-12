@@ -23,7 +23,7 @@ const Hero = () => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
     }, 3000); // Chuyển slide mỗi 3 giây
 
-    return () => clearInterval(interval); // Dọn dẹp interval khi component unmount
+    return () => clearInterval(interval);
   }, []);
 
   const goToNext = () => {
@@ -38,17 +38,16 @@ const Hero = () => {
 
   return (
     <div className="relative">
-      {/* Slider List */}
       <div
         className="relative w-full overflow-hidden"
         style={{
-          height: '600px', // Chiều cao cố định cho Banner
+          height: '600px',
         }}
       >
         <div
           className="flex transition-transform duration-1000 ease-in-out"
           style={{
-            transform: `translateX(-${currentIndex * 100}%)`, // Di chuyển các slide
+            transform: `translateX(-${currentIndex * 100}%)`,
           }}
         >
           {images.map((image, index) => (
@@ -58,7 +57,6 @@ const Hero = () => {
                 alt={image.caption}
                 className="w-full h-full object-cover"
               />
-              {/* Overlay with caption */}
               <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-center text-white px-4">
                 <h2 className="text-3xl font-bold">{image.caption}</h2>
               </div>
@@ -67,7 +65,6 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Prev & Next Buttons */}
       <div className="absolute top-1/2 left-5 transform -translate-y-1/2">
         <button
           onClick={goToPrev}
@@ -85,7 +82,6 @@ const Hero = () => {
         </button>
       </div>
 
-      {/* Dots Navigation */}
       <ul className="absolute bottom-5 left-1/2 transform -translate-x-1/2 flex space-x-2">
         {images.map((_, index) => (
           <li

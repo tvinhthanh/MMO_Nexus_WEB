@@ -11,16 +11,10 @@ const { upload, uploadToCloudinary } = require('./middleware/upload');  // Đả
 
 const app = express();
 
-// Kiểm tra và tạo thư mục 'uploads' nếu không tồn tại (tùy chọn)
-const uploadDir = './uploads';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir);
-}
-
 // Cấu hình CORS để cho phép yêu cầu từ frontend
 app.use(cors({
     origin: 'http://localhost:5175',  // URL của frontend
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE'],
     credentials: true,  // Cho phép cookie và thông tin xác thực
 }));
 
@@ -54,10 +48,8 @@ const categoryRoutes = require('./routes/catagory');
 const storeRoutes = require('./routes/myStore');
 const productRoutes = require('./routes/product');
 const cartRoutes = require('./routes/cart');
+const orderRoutes = require('./routes/order');
 
-const hotelRoutes = require('./routes/hotel');
-const MyHotelRoutes = require('./routes/myhotel');
-const bookingRoutes = require('./routes/booking');
 
 // API Routes
 app.use('/api/category', categoryRoutes);
@@ -66,11 +58,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/store', storeRoutes);
 app.use('/api/products', productRoutes); 
 app.use('/api/carts', cartRoutes);
+app.use('/api/orders', orderRoutes);
 
-
-app.use('/api/hotel', hotelRoutes);
-app.use('/api/my-hotels', MyHotelRoutes);
-app.use('/api/bookings', bookingRoutes);
 
 
 // API để upload ảnh

@@ -8,13 +8,7 @@ import Layout from "./layouts/Layout";
 import Register from "./pages/Register";
 import SignIn from "./pages/SignIn";
 import { useAppContext } from "./contexts/AppContext";
-import Search from "./pages/Search";
-import Detail from "./pages/Detail";
 import Home from "./pages/Home";
-import InvoiceManager from "./pages/admin/InvoiceManager";
-import HotelManager from "./pages/admin/HotelManager";
-import UserManager from "./pages/admin/UserManager";
-import Admin from "./pages/admin/Admin";
 import "slick-carousel/slick/slick.css"; 
 import "slick-carousel/slick/slick-theme.css";
 import MyStore from "./pages/store/MyStore";
@@ -25,6 +19,10 @@ import ThemDanhmuc from "./pages/danhmuc/ThemDanhmuc";
 import Sanpham from "./pages/products/Sanpham";
 import Themsp from "./pages/products/Themsanpham";
 import XemSanPham from "./pages/products/Xemsanpham";
+import MyCart from "./pages/cart/MyCart";
+import MyDonHang from "./pages/donhang/mydonhang";
+import QuanLyDonHang from "./pages/donhang/quanlydonhang";
+import ProductDetail from "./pages/products/XemChitietSp";
 
 const App = () => {
   const { isLoggedIn, userRole, userId } = useAppContext();
@@ -34,8 +32,6 @@ const App = () => {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<Layout><Home /></Layout>} />
-        <Route path="/search" element={<Layout><Search /></Layout>} />
-        <Route path="/detail/:hotelId" element={<Layout><Detail /></Layout>} />
         <Route path="/register" element={<Layout><Register /></Layout>} />
         <Route path="/login" element={<Layout><SignIn /></Layout>} />
 
@@ -53,6 +49,7 @@ const App = () => {
                 <Route path="/:storeId/add-danhmuc" element={<Layout><ThemDanhmuc /></Layout>} />
                 <Route path="/sanpham" element={<Layout><Sanpham /></Layout>} />
                 <Route path="/themsanpham" element={<Layout><Themsp /></Layout>} />
+                <Route path="/quanlydonhang" element={<Layout><QuanLyDonHang /></Layout>} />
 
                 </>
             )}
@@ -61,19 +58,14 @@ const App = () => {
             {userRole == "2" && (
               <>
                 <Route path="/product" element={<Layout><XemSanPham /></Layout>} />
+                <Route path="/cart" element={<MyCart />} />
+                <Route path="/mydonhang" element={<Layout><MyDonHang /></Layout>} />
+                <Route path="/product/:productId" element={<Layout><ProductDetail /></Layout>} />
 
               </>
             )}
 
-            {/* userRole 3 - Admin userRole 3 */}
-            {userRole == "3" && (
-              <>
-                <Route path="/admin" element={<Layout><Admin /></Layout>} />
-                <Route path="/user-manager" element={<Layout><UserManager /></Layout>} />
-                <Route path="/hotel-manager" element={<Layout><HotelManager /></Layout>} />
-                <Route path="/invoice-manager" element={<Layout><InvoiceManager /></Layout>} />
-              </>
-            )}
+           
           </>
         )}
 

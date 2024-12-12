@@ -152,7 +152,7 @@ const Register = () => {
           className="border rounded w-full py-1 px-2 text-sm"
           {...register("role", { required: "Please select a role" })}
         >
-          <option value="1">Chủ khách sạn</option>
+          <option value="1">Cửa hàng</option>
           <option value="2">Người dùng</option>
         </select>
         {errors.role && (
