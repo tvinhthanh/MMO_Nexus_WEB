@@ -63,6 +63,25 @@ router.post('/', upload.single('image'), async (req, res) => {
     }
 });
 
+router.get('/search/:name', async (req, res) => {
+  const { name } = req.params; // Lấy tham số "name" từ URL
+
+  if (!name || name.trim() === "") {
+    return res.status(400).json({ message: "Tên sản phẩm không được để trống" });
+  }
+    // Thêm ký tự "%" để tìm kiếm tên sản phẩm chứa chuỗi "name"
+    const searchData = `%${name}%`;
+    const querySearch = `SELECT * FROM products WHERE product_name LIKE ?`;
+    connection.query(querySearch, [searchData], (err, results) => {
+      if (err) {
+        return res.status(500).json({ message: err });
+      }
+      res.status(200).json({ results });
+
+    });
+});
+
+
 // Lấy tất cả sản phẩm
 router.get("/", (req, res) => {
     try {
@@ -185,27 +204,6 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-router.get('/search', async (req, res) => {
-  const { query } = req.query;  // Lấy query parameter "query" từ URL
 
-  if (!query || query.trim() === "") {
-    return res.status(400).json({ message: "Tên sản phẩm không được để trống" });
-  }
-
-  try {
-    // Truy vấn cơ sở dữ liệu để tìm các sản phẩm có tên tương tự với query
-    const searchQuery = `%${query}%`;  // Thêm % để tìm kiếm với mọi tên chứa query
-    const result = await db.query('SELECT * FROM products WHERE name LIKE ?', [searchQuery]);
-
-    if (result.length === 0) {
-      return res.status(404).json({ message: "Không tìm thấy sản phẩm nào" });
-    }
-
-    res.status(200).json(result);  // Trả về danh sách sản phẩm tìm được
-  } catch (error) {
-    console.error('Lỗi khi tìm kiếm sản phẩm:', error);
-    return res.status(500).json({ message: "Lỗi khi tìm kiếm sản phẩm" });
-  }
-});
 
 module.exports = router;

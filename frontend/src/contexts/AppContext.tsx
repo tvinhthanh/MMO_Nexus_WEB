@@ -12,15 +12,28 @@ type ToastMessage = {
   message: string;
   type: "SUCCESS" | "ERROR";
 };
-
+interface Product {
+  category_id: number; // ID của danh mục sản phẩm
+  createdAt: string; // Thời gian tạo sản phẩm (ISO string)
+  description: string; // Mô tả sản phẩm
+  image: string; // URL hình ảnh của sản phẩm
+  price: string; // Giá sản phẩm (có thể là số nếu muốn)
+  product_id: number; // ID sản phẩm
+  product_name: string; // Tên sản phẩm
+  stock: number; // Số lượng tồn kho
+  store_id: number; // ID cửa hàng
+  updatedAt: string; // Thời gian cập nhật sản phẩm (ISO string)
+}
 //Khai báo AppContext
 type AppContext = {
   showToast: (toastMessage: ToastMessage) => void;
   isLoggedIn: boolean;
   stripePromise: Promise<Stripe | null>;
   userId: string | null;
+  searchData: Product[];
   userRole: string | null;
   storeId: string | null;
+  setListSearch: (data) => void,
   setUserData: (id: string, userRole: string) => void; 
   setStoreId: (storeId: string) => void; 
 };
@@ -33,6 +46,7 @@ const stripePromise = STRIPE_PUB_KEY ? loadStripe(STRIPE_PUB_KEY) : Promise.reso
 export const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [toast, setToast] = useState<ToastMessage | undefined>(undefined);
   const [userId, setUserId] = useState<string | null>(null);
+  const [searchData, setSearchData] = useState([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [storeId, setStoreId] = useState<string | null>(null);
 
@@ -66,6 +80,14 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
     setUserRole(userRole);
   };
 
+  const setListSearch = (data) => {
+    setSearchData(data.results);
+    console.log('da doi du lieu');
+    console.log(data.results);
+
+    
+  };
+
   console.log(userId);
   console.log(storeId);
 
@@ -78,8 +100,10 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
         isLoggedIn,
         stripePromise, 
         userId, 
+        searchData,
         userRole,
         storeId, 
+        setListSearch,
         setStoreId, 
         setUserData,
       }}

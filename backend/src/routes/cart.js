@@ -16,7 +16,7 @@ router.get('/', async (req, res) => {
   }
 });
 
-// 1. GET route to retrieve the cart by user_id
+// 2. GET route to retrieve the cart by user_id
 router.get("/:user_id", (req, res) => {
   const { user_id } = req.params;  // Lấy user_id từ URL parameter
 
@@ -24,7 +24,6 @@ router.get("/:user_id", (req, res) => {
     return res.status(400).json({ message: "Thiếu user_id" });
   }
 
-  // Truy vấn lấy giỏ hàng của người dùng từ cơ sở dữ liệu
   const queryGetCart = `SELECT cart_id, products FROM carts WHERE user_id = ?`;
 
   connection.query(queryGetCart, [user_id], (err, results) => {
@@ -37,7 +36,6 @@ router.get("/:user_id", (req, res) => {
       return res.status(404).json({ message: "Giỏ hàng không tồn tại cho người dùng này" });
     }
 
-    // Lấy dữ liệu từ cột products và kiểm tra nếu có dữ liệu hợp lệ
     const products = results[0].products;
 
     if (!products) {
@@ -47,12 +45,10 @@ router.get("/:user_id", (req, res) => {
     let cart = [];
 
     try {
-      // Kiểm tra nếu dữ liệu không phải chuỗi JSON hợp lệ
       if (typeof products === 'object') {
-        cart = products; // Nếu đã là đối tượng, bỏ qua bước phân tích cú pháp
+        cart = products; 
       } else {
-        // Nếu là chuỗi, tiến hành phân tích cú pháp JSON
-        cart = JSON.parse(products);  // Chuyển chuỗi JSON thành mảng các đối tượng sản phẩm
+        cart = JSON.parse(products);  
       }
 
       // Kiểm tra xem mảng có trống không
@@ -64,7 +60,6 @@ router.get("/:user_id", (req, res) => {
       return res.status(500).json({ message: "Lỗi khi phân tích giỏ hàng. Dữ liệu không hợp lệ." });
     }
 
-    // Trả về giỏ hàng dưới dạng JSON
     res.status(200).json({ cart });
   });
 });
@@ -207,7 +202,7 @@ router.post('/', async (req, res) => {
   // }
 });
 
-// 2. PUT route to update the cart (thêm hoặc cập nhật sản phẩm trong giỏ)
+// PUT route to update the cart (thêm hoặc cập nhật sản phẩm trong giỏ)
 router.put("/", (req, res) => {
   const { user_id, product_id, quantity, price,product_name,image,store_id } = req.body;
 
@@ -331,20 +326,124 @@ router.put('/:cartId', async (req, res) => {
   }
 });
 
-// 5. Xóa giỏ hàng
-router.delete('/:cartId', async (req, res) => {
-  const { cartId } = req.params;
+// // 5. Xóa giỏ hàng
+// router.delete('/:cartId', async (req, res) => {
+//   const { cartId } = req.params;
 
-  try {
-    const deletedRows = await Carts.delete(cartId);
-    if (deletedRows === 0) {
-      return res.status(404).json({ error: 'Giỏ hàng không tồn tại' });
+//   try {
+//     const deletedRows = await Carts.delete(cartId);
+//     if (deletedRows === 0) {
+//       return res.status(404).json({ error: 'Giỏ hàng không tồn tại' });
+//     }
+//     res.status(200).json({ message: 'Giỏ hàng đã được xóa' });
+//   } catch (error) {
+//     console.error('Error deleting cart:', error);
+//     res.status(500).json({ error: 'Lỗi khi xóa giỏ hàng' });
+//   }
+// });clear/${userId}
+router.put('/clear/:userId', async (req, res) => {
+    const { userId } = req.params;
+  
+    if (!userId) {
+      return res.status(400).send('user_id là bắt buộc');
     }
-    res.status(200).json({ message: 'Giỏ hàng đã được xóa' });
-  } catch (error) {
-    console.error('Error deleting cart:', error);
-    res.status(500).json({ error: 'Lỗi khi xóa giỏ hàng' });
-  }
-});
+  
+    const updateCartQuery = `
+      UPDATE carts SET products = NULL WHERE user_id = ?
+    `;
+  
+    connection.query(updateCartQuery, [userId], (err, results) => {
+      if (err) {
+        console.error('Lỗi khi cập nhật giỏ hàng: ', err);
+        return res.status(500).send('Lỗi khi cập nhật giỏ hàng');
+      }
+  
+      // Kiểm tra số bản ghi được cập nhật
+      if (results.affectedRows === 0) {
+        return res.status(404).send('Không tìm thấy giỏ hàng với user_id này');
+      }
+  
+      // Phản hồi thành công
+      res.status(200).send('Giỏ hàng đã được làm trống thành công');
+    });
+  });
+
+  router.delete('/:userId/items/:productId', (req, res) => {
+    const { userId, productId } = req.params;
+  
+    // Truy vấn để tìm giỏ hàng của người dùng
+    const findCartQuery = 'SELECT * FROM carts WHERE user_id = ?';
+    connection.query(findCartQuery, [userId], (err, rows) => {
+      if (err) {
+        console.error('Lỗi khi tìm giỏ hàng:', err);
+        return res.status(500).json({ error: 'Lỗi khi tìm giỏ hàng' });
+      }
+  
+      if (rows.length === 0) {
+        return res.status(404).json({ error: 'Giỏ hàng không tồn tại' });
+      }
+  
+      const cart = rows[0];
+      const products = JSON.parse(cart.products); // Giả sử cột `products` là kiểu JSON
+  
+      // Lọc ra sản phẩm cần xóa
+      const updatedProducts = products.filter(item => item.product_id !== productId);
+  
+      // Cập nhật lại giỏ hàng
+      const updateCartQuery = 'UPDATE carts SET products = ? WHERE user_id = ?';
+      connection.query(updateCartQuery, [JSON.stringify(updatedProducts), userId], (updateErr, updateResults) => {
+        if (updateErr) {
+          console.error('Lỗi khi cập nhật giỏ hàng:', updateErr);
+          return res.status(500).json({ error: 'Lỗi khi cập nhật giỏ hàng' });
+        }
+  
+        res.status(200).json({ success: true, message: 'Sản phẩm đã được xóa khỏi giỏ hàng' });
+      });
+    });
+  });
+// // Route xóa sản phẩm khỏi giỏ hàng
+// router.delete('/:userId/item/:productId', (req, res) => {
+//   const { userId, productId } = req.params;
+
+//   // Tìm chỉ mục của sản phẩm trong mảng JSON
+//   const findIndexQuery = `
+//     SELECT JSON_UNQUOTE(JSON_SEARCH(products, 'one', ?)) AS productIndex
+//     FROM carts 
+//     WHERE user_id = ? AND JSON_CONTAINS(products, JSON_OBJECT('product_id', ?))
+//   `;
+
+//   connection.execute(findIndexQuery, [productId, userId, productId], (err, result) => {
+//     if (err) {
+//       console.error('Error finding product index:', err);
+//       return res.status(500).json({ message: 'Internal Server Error' });
+//     }
+
+//     if (result.length === 0 || !result[0].productIndex) {
+//       return res.status(404).json({ message: 'Item not found in cart' });
+//     }
+
+//     const productIndex = result[0].productIndex;
+
+//     // Xóa sản phẩm khỏi giỏ hàng sử dụng JSON_REMOVE
+//     const updateCartQuery = `
+//       UPDATE carts 
+//       SET products = JSON_REMOVE(products, ?)
+//       WHERE user_id = ?
+//     `;
+
+//     connection.execute(updateCartQuery, [productIndex, userId], (err, result) => {
+//       if (err) {
+//         console.error('Error deleting item from cart:', err);
+//         return res.status(500).json({ message: 'Internal Server Error' });
+//       }
+
+//       if (result.affectedRows > 0) {
+//         return res.status(200).json({ message: 'Item removed from cart successfully' });
+//       } else {
+//         return res.status(404).json({ message: 'Item not found in cart' });
+//       }
+//     });
+//   });
+// });
 
 module.exports = router;

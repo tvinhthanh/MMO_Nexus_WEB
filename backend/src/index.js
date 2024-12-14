@@ -4,18 +4,15 @@ require('dotenv').config();
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');  // Import fs để kiểm tra và tạo thư mục 'uploads' nếu cần thiết
-
-// Import các module đã khai báo từ upload.js
-const { upload, uploadToCloudinary } = require('./middleware/upload');  // Đảm bảo đường dẫn đúng đến middleware
+const fs = require('fs'); 
+const { upload, uploadToCloudinary } = require('./middleware/upload');
 
 const app = express();
 
-// Cấu hình CORS để cho phép yêu cầu từ frontend
 app.use(cors({
     origin: 'http://localhost:5175',  // URL của frontend
     methods: ['GET', 'POST', 'PUT','PATCH', 'DELETE'],
-    credentials: true,  // Cho phép cookie và thông tin xác thực
+    credentials: true,
 }));
 
 // Middleware để phân tích JSON và cookie

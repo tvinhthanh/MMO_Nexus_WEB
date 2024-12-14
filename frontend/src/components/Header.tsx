@@ -1,16 +1,35 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useQuery } from "react-query";
 import { useAppContext } from "../contexts/AppContext";
 import SignOutButton from "./SignOutButton";
+import * as apiClient from "../api-client";
+
 
 const Header = () => {
-  const { isLoggedIn, userRole, userId } = useAppContext();
+  const { isLoggedIn, userRole, setListSearch } = useAppContext();
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
+  const { data: searchData, error, isError } = useQuery(
+    ["searchProducts", searchQuery],
+    () => apiClient.searchProducts(searchQuery),
+    {
+      enabled: !!searchQuery, // Chỉ chạy query khi searchQuery không rỗng
+      onError: (error) => {
+        console.error("Error fetching products:", error);
+      },
+      onSuccess: (data) => {
+        console.log("Search successful:");
+        console.log(data);
+        setListSearch(data);
+      },
+    }
+  );
+
   const handleSearch = (e: any) => {
     e.preventDefault();
-    if (searchQuery) {
+    if (searchQuery.trim()) {
       navigate(`/search?query=${searchQuery}`);
     }
   };
@@ -24,7 +43,7 @@ const Header = () => {
         </div>
 
         {/* Tìm kiếm sản phẩm */}
-        <form onSubmit={handleSearch} className="flex items-center">
+        <div onSubmit={handleSearch} className="flex items-center">
           <input
             type="text"
             value={searchQuery}
@@ -33,12 +52,12 @@ const Header = () => {
             className="px-4 py-2 rounded-l-md text-gray-700"
           />
           <button
-            type="submit"
-            className="bg-green-400 text-white px-4 py-2 rounded-r-md hover:bg-green-500"
+            onClick={handleSearch}
+            className="bg-black text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
           >
             Tìm kiếm
           </button>
-        </form>
+        </div>
 
         {/* Navigation Links */}
         <ul className="hidden md:flex space-x-8 text-gray-300 font-medium">

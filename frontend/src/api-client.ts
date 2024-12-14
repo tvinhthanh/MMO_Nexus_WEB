@@ -234,9 +234,37 @@ export const deleteStoreById = async (storeId: string) => {
   }
 };
 
-export const searchProducts = async (query:any) => {
+export const clearCart = async (userId: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/carts/clear/${userId}`, {
+    method: 'PUT'
+  });
+
+  if (!response.ok) {
+    throw new Error('Không thể xóa giỏ hàng');
+  }
+
+  return response.json(); // Return the response from backend
+};
+
+export const removeItemFromCart = async (userId : string, productId: string) => {
+  const response = await fetch(`${API_BASE_URL}//api/carts/${userId}/items/${productId}`, {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to remove item from cart');
+  }
+
+  return response.json();
+};
+
+
+export const searchProducts = async (name: any) => {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/products?search=${query}`);
+    const response = await fetch(`${API_BASE_URL}/api/products/search/${name}`);
     if (!response.ok) {
       throw new Error("Failed to fetch search results");
     }
