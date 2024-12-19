@@ -247,7 +247,7 @@ export const clearCart = async (userId: string) => {
 };
 
 export const removeItemFromCart = async (userId : string, productId: string) => {
-  const response = await fetch(`${API_BASE_URL}//api/carts/${userId}/items/${productId}`, {
+  const response = await fetch(`${API_BASE_URL}/api/carts/${userId}/items/${productId}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
