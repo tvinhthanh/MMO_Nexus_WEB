@@ -38,6 +38,7 @@ const MyCart: React.FC = () => {
 
   const { mutate: removeItemFromCart } = useMutation(apiClient.removeItemFromCart, {
     onSuccess: () => {
+      alert("Đã xóa sản phẩm thành công!");
       queryClient.invalidateQueries(["getCartByUserId"]);
     },
     onError: () => {
@@ -80,6 +81,7 @@ const MyCart: React.FC = () => {
       shippingAddress: userData.address,
       paymentMethod,
       store_id: storeId,
+      products:JSON.stringify(cartData.cart)
     };
 
     createOrder(orderData);
@@ -87,8 +89,8 @@ const MyCart: React.FC = () => {
 
   const handleRemoveItem = (productId: string) => {
     if (!userId) return;
-    removeItemFromCart(productId);
-    console.log(productId)
+    removeItemFromCart({userId, productId});
+    console.log("productId xoa",productId);
   };
 
   const handleClearCart = () => {
@@ -152,14 +154,12 @@ const MyCart: React.FC = () => {
                   onClick={() => handleRemoveItem(item.product_id)}
                   className="px-2 py-1 bg-gray-200 rounded"
                 >
-                  -
                 </button>
                 <p className="text-gray-600">{item.quantity}</p>
                 <button
                   onClick={() => handleRemoveItem(item.product_id)}
                   className="px-2 py-1 bg-gray-200 rounded"
                 >
-                  +
                 </button>
                 <p className="text-gray-600">
                   Tổng tiền: {item.price * item.quantity} VND
@@ -181,7 +181,18 @@ const MyCart: React.FC = () => {
       ) : (
         <p>Giỏ hàng trống.</p>
       )}
-
+      {
+        paymentMethod == "momo"?
+        <div className="flex justify-center mt-10">
+          <img 
+            src="https://via.placeholder.com/80" 
+            alt="QR MoMo" 
+            className="w-48 h-48 rounded-md shadow-md object-cover"
+          />
+        </div>
+        :
+        <></>
+      }
       <div className="mt-6">
         <label>Phương thức thanh toán:</label>
         <select
@@ -190,8 +201,7 @@ const MyCart: React.FC = () => {
           className="border border-gray-300 rounded-lg p-2 w-full"
         >
           <option value="money">Tiền mặt</option>
-          <option value="credit_card">Thẻ tín dụng</option>
-          <option value="paypal">PayPal</option>
+          <option value="momo">Momo</option>
         </select>
       </div>
 

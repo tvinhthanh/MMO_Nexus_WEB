@@ -5,6 +5,44 @@ import {
 } from "./types";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
+export const getReviews = async (productId: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/reviews/${productId}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch store information.");
+  }
+
+  return response.json();
+};
+export const addReviews = async (data: object) => {
+  const review = {
+    "product_id": data.productId,
+    "customer_id": data.userId,
+    "rating": data.rating,
+    "comment": data.reviewContent,
+  };
+
+  const response = await fetch(`${API_BASE_URL}/api/reviews`, {
+    method: "POST", // HTTP POST request
+    headers: {
+      "Content-Type": "application/json", // Content type is JSON
+    },
+    body: JSON.stringify(review), // Convert cart data to JSON
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch store information.");
+  }
+
+  return response.json();
+};
+
 
 export const signIn = async (formData: SignInFormData) => {
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -59,11 +97,10 @@ export const register = async (formData: RegisterFormData) => {
 export const validateToken = async () => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
-      credentials: "include",  // Include credentials like cookies (if needed)
+      credentials: "include", 
     });
 
     if (!response.ok) {
-      // Log the response status and body for debugging purposes
       const errorDetails = await response.text();
       console.error("Token validation failed: ", errorDetails);
       throw new Error("Token is invalid or expired.");
@@ -198,23 +235,29 @@ export const getStoreById = async (storeId: string) => {
   return data; // Assuming your API responds with the store data
 };
 
-export const updateStoreById = async (storelId: string, formData: FormData) => {
-  const response = await fetch(`${API_BASE_URL}/api/store/${storelId}`, {
-    method: 'PUT', // Use the PUT method for update
-    headers: {
-      // No need for Content-Type when sending FormData
-      // Content-Type: 'multipart/form-data', // this is set automatically with FormData
-    },
-    body: formData, // Send the FormData with the store details
-  });
+export const UpdateStore = async (storeId: string, payload: any) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/store/${storeId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
 
-  if (!response.ok) {
-    throw new Error('Failed to update store');
+    if (!response.ok) {
+      throw new Error(`Failed to update store: ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error updating store:", error);
+    throw error; // Propagate error to the caller
   }
-
-  const data = await response.json();
-  return data; // Assuming your API responds with updated store data
 };
+
+
+
 
 export const deleteStoreById = async (storeId: string) => {
   try {
@@ -246,8 +289,8 @@ export const clearCart = async (userId: string) => {
   return response.json(); // Return the response from backend
 };
 
-export const removeItemFromCart = async (userId : string, productId: string) => {
-  const response = await fetch(`${API_BASE_URL}/api/carts/${userId}/items/${productId}`, {
+export const removeItemFromCart = async (data : object) => {
+  const response = await fetch(`${API_BASE_URL}/api/carts/${data.userId}/items/${data.productId}`, {
     method: 'DELETE',
     headers: {
       'Content-Type': 'application/json',
@@ -379,7 +422,7 @@ export const getCartByUserId = async (userId: string) => {
 export const updateCart = async (data: { userId: string;productId: string, cart: any[] }) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/carts/${data.userId}/${data.productId}`, {
-      method: "PATCH",  // hoặc "PATCH" tùy theo cách bạn cập nhật dữ liệu
+      method: "PATCH",  
       headers: {
         "Content-Type": "application/json",
       },
@@ -421,7 +464,7 @@ export const createOrder = async (orderData: any) => {
 export const updateOrderStatus = async (orderId: string, status: string) => {
   try {
     const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/status`, {
-      method: "PATCH",
+      method: "PATCH",//1 thuoc tinh
       headers: {
         'Content-Type': 'application/json',
       },
@@ -539,7 +582,7 @@ export const deleteProductById = async (productId: string) => {
     return result; // Trả về kết quả
   } catch (error) {
     console.error('Error deleting product:', error);
-    throw error; // Re-throw error để xử lý tại component
+    throw error;
   }
 };
 export const updateProduct = async (productData: {

@@ -7,7 +7,6 @@ import { useAppContext } from "../../contexts/AppContext";
 const Sanpham: React.FC = () => {
   const { storeId } = useAppContext();
   const queryClient = useQueryClient();
-
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [editName, setEditName] = useState("");

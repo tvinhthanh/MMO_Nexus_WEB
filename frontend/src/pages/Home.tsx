@@ -65,7 +65,7 @@ const Home: React.FC = () => {
         setCart((prevCart) => [...prevCart, product]);
         alert("Đã thêm sản phẩm vào giỏ hàng!");
       } else {
-        alert("Thêm sản phẩm vào giỏ hàng thất bại.");
+        alert("Đã thêm sản phẩm vào giỏ hàng!");
       }
     } catch (error) {
       console.error("Error adding product to cart:", error);
@@ -109,75 +109,14 @@ const Home: React.FC = () => {
 
   return (
     <div className="max-w-7xl mx-auto py-10 px-4">
-      {
-        (searchData.length > 0)?
-          <h1 className="text-3xl font-bold mb-6">Danh sách tìm kiếm</h1>:<span>&nbsp;</span>
-        
-      }
+      {/* Tiêu đề danh sách tìm kiếm (nếu có) */}
+      {searchData.length > 0 && (
+        <h1 className="text-3xl font-bold mb-6">Danh sách tìm kiếm</h1>
+      )}
+  
+      {/* Danh sách sản phẩm tìm kiếm */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
-        {searchData.map((product: any) => (
-          <div key={product.product_id} className="border border-gray-300 rounded-lg p-4 shadow-md bg-white">
-            <div className="w-full h-40 overflow-hidden bg-gray-100 flex items-center justify-center mb-4">
-              {product.image ? (
-                <img src={product.image} alt={product.product_name} className="w-full h-full object-cover" />
-              ) : (
-                <span className="text-gray-500">Chưa có hình ảnh</span>
-              )}
-            </div>
-
-            <h3 className="text-lg font-bold">{product.product_name}</h3>
-            <p className="text-gray-600">Giá: {product.price} VND</p>
-            <p className="text-gray-600">Tồn kho: {product.stock}</p>
-            <p className="text-gray-600">Mô tả: {product.description}</p>
-
-            <button
-              onClick={() =>
-                handleAddToCart({
-                  product_id: product.product_id,
-                  product_name: product.product_name,
-                  product_price: product.price,
-                  quantity: 1,
-                  image: product.image,
-                  store_id: product.store_id,
-                })
-              }
-              className="mt-4 py-2 px-4 bg-green-500 text-white rounded"
-              disabled={product.stock === 0}
-
-            >
-              Thêm vào giỏ hàng
-            </button>
-
-            <button
-              onClick={() =>
-                toggleFavorite({
-                  product_id: product.product_id,
-                  product_name: product.product_name,
-                  product_price: product.price,
-                  quantity: 1,
-                  image: product.image,
-                  store_id: product.store_id,
-                })
-              }
-              className="mt-4 py-2 px-4 bg-transparent text-red-500 rounded"
-            >
-              <span className="text-2xl">
-                {favorites.some((fav) => fav.product_id === product.product_id) ? "❤️" : "🤍"}
-              </span>
-            </button>
-
-            <button
-              onClick={() => handleViewDetail(product.product_id)} // Mở chi tiết sản phẩm
-              className="mt-4 py-2 px-4 bg-blue-500 text-white rounded"
-            >
-              Xem chi tiết
-            </button>
-          </div>
-        ))}
-      </div>
-      <h1 className="text-3xl font-bold mb-6">Danh sách tất cả sản phẩm</h1>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {productData.map((product: any) => (
+        {searchData.map((product) => (
           <div
             key={product.product_id}
             className="border border-gray-300 rounded-lg p-4 shadow-md bg-white"
@@ -194,14 +133,94 @@ const Home: React.FC = () => {
                 <span className="text-gray-500">Chưa có hình ảnh</span>
               )}
             </div>
-
+  
             {/* Thông tin sản phẩm */}
-            <h3 className="text-lg font-bold">Tên: {product.product_name}</h3>
+            <h3 className="text-lg font-bold">{product.product_name}</h3>
             <p className="text-gray-600">Giá: {product.price} VND</p>
             <p className="text-gray-600">Tồn kho: {product.stock}</p>
             <p className="text-gray-600">Mô tả: {product.description}</p>
-
-            {/* Nút Add to Cart */}
+  
+            {/* Nút Thêm vào giỏ hàng */}
+            <button
+              onClick={() =>
+                handleAddToCart({
+                  product_id: product.product_id,
+                  product_name: product.product_name,
+                  product_price: product.price,
+                  quantity: 1, // Số lượng mặc định là 1
+                  image: product.image,
+                  store_id: product.store_id,
+                })
+              }
+              className="mt-4 py-2 px-4 bg-green-500 text-white rounded"
+              disabled={product.stock === 0} // Vô hiệu hóa nút nếu sản phẩm hết hàng
+            >
+              Thêm vào giỏ hàng
+            </button>
+  
+            {/* Nút yêu thích */}
+            <button
+              onClick={() =>
+                toggleFavorite({
+                  product_id: product.product_id,
+                  product_name: product.product_name,
+                  product_price: product.price,
+                  quantity: 1, // Số lượng mặc định là 1
+                  image: product.image,
+                  store_id: product.store_id,
+                })
+              }
+              className="mt-4 py-2 px-4 bg-transparent text-red-500 rounded"
+            >
+              {/* Hiển thị trái tim đầy nếu sản phẩm có trong danh sách yêu thích */}
+              <span className="text-2xl">
+                {favorites.some((fav) => fav.product_id === product.product_id)
+                  ? "❤️"
+                  : "🤍"}
+              </span>
+            </button>
+  
+            {/* Nút Xem chi tiết */}
+            <button
+              onClick={() => handleViewDetail(product.product_id)} // Mở chi tiết sản phẩm
+              className="mt-4 py-2 px-4 bg-blue-500 text-white rounded"
+            >
+              Xem chi tiết
+            </button>
+          </div>
+        ))}
+      </div>
+  
+      {/* Tiêu đề danh sách tất cả sản phẩm */}
+      <h1 className="text-3xl font-bold mb-6">Danh sách tất cả sản phẩm</h1>
+  
+      {/* Danh sách sản phẩm tất cả */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {productData.map((product) => (
+          <div
+            key={product.product_id}
+            className="border border-gray-300 rounded-lg p-4 shadow-md bg-white"
+          >
+            {/* Hình ảnh sản phẩm */}
+            <div className="w-full h-40 overflow-hidden bg-gray-100 flex items-center justify-center mb-4">
+              {product.image ? (
+                <img
+                  src={product.image}
+                  alt={product.product_name}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-gray-500">Chưa có hình ảnh</span>
+              )}
+            </div>
+  
+            {/* Thông tin sản phẩm */}
+            <h3 className="text-lg font-bold">{product.product_name}</h3>
+            <p className="text-gray-600">Giá: {product.price} VND</p>
+            <p className="text-gray-600">Tồn kho: {product.stock}</p>
+            <p className="text-gray-600">Mô tả: {product.description}</p>
+  
+            {/* Nút Thêm vào giỏ hàng */}
             <button
               onClick={() =>
                 handleAddToCart({
@@ -217,25 +236,28 @@ const Home: React.FC = () => {
             >
               Thêm vào giỏ hàng
             </button>
-
-            {/* Nút Add to Favorites */}
+  
+            {/* Nút yêu thích */}
             <button
-              onClick={() => toggleFavorite({
-                product_id: product.product_id,
-                product_name: product.product_name,
-                product_price: product.price,
-                quantity: 1, // Số lượng mặc định là 1
-                image: product.image,
-                store_id: product.store_id,
-              })}
+              onClick={() =>
+                toggleFavorite({
+                  product_id: product.product_id,
+                  product_name: product.product_name,
+                  product_price: product.price,
+                  quantity: 1, // Số lượng mặc định là 1
+                  image: product.image,
+                  store_id: product.store_id,
+                })
+              }
               className="mt-4 py-2 px-4 bg-transparent text-red-500 rounded"
             >
-              {/* Hiển thị trái tim đầy nếu sản phẩm trong danh sách yêu thích */}
               <span className="text-2xl">
-                {favorites.some((fav) => fav.product_id === product.product_id) ? '❤️' : '🤍'}
+                {favorites.some((fav) => fav.product_id === product.product_id)
+                  ? "❤️"
+                  : "🤍"}
               </span>
             </button>
-
+  
             {/* Nút Xem chi tiết */}
             <button
               onClick={() => handleViewDetail(product.product_id)}
@@ -246,8 +268,8 @@ const Home: React.FC = () => {
           </div>
         ))}
       </div>
-
-      {/* Hiển thị danh sách yêu thích */}
+  
+      {/* Hiển thị danh sách yêu thích nếu có */}
       {favorites.length > 0 && (
         <div className="mt-10">
           <h2 className="text-2xl font-bold mb-4">Danh sách yêu thích</h2>
@@ -269,7 +291,7 @@ const Home: React.FC = () => {
                     <span className="text-gray-500">Chưa có hình ảnh</span>
                   )}
                 </div>
-
+  
                 {/* Thông tin sản phẩm yêu thích */}
                 <h3 className="text-lg font-bold">{product.product_name}</h3>
                 <p className="text-gray-600">Giá: {product.product_price} VND</p>
@@ -280,6 +302,7 @@ const Home: React.FC = () => {
       )}
     </div>
   );
+  
 };
 
 export default Home;

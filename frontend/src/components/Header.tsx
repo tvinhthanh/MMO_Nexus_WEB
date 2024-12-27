@@ -11,7 +11,7 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
 
-  const { data: searchData, error, isError } = useQuery(
+  const { data: searchData} = useQuery(
     ["searchProducts", searchQuery],
     () => apiClient.searchProducts(searchQuery),
     {

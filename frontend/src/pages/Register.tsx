@@ -145,7 +145,7 @@ const Register = () => {
         )}
       </label>
       
-      {/* Chọn vai trò người dùng */}
+      {/* Chọn vai trò người dùng
       <label className="text-gray-700 text-xs font-semibold">
         Vai trò
         <select
@@ -158,7 +158,7 @@ const Register = () => {
         {errors.role && (
           <span className="text-red-500 text-xs">{errors.role.message}</span>
         )}
-      </label>
+      </label> */}
       
       <button
         type="submit"

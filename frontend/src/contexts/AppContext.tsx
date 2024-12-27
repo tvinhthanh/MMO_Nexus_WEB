@@ -33,7 +33,7 @@ type AppContext = {
   searchData: Product[];
   userRole: string | null;
   storeId: string | null;
-  setListSearch: (data) => void,
+  setListSearch: (data:any) => void,
   setUserData: (id: string, userRole: string) => void; 
   setStoreId: (storeId: string) => void; 
 };
@@ -80,7 +80,7 @@ export const AppContextProvider = ({ children }: { children: React.ReactNode }) 
     setUserRole(userRole);
   };
 
-  const setListSearch = (data) => {
+  const setListSearch = (data : any) => {
     setSearchData(data.results);
     console.log('da doi du lieu');
     console.log(data.results);

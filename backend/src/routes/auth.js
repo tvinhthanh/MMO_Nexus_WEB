@@ -126,29 +126,25 @@ const validateToken = (req, res, next) => {
           if (!isMatch) {
             return res.status(400).json({ message: "Invalid Credentials" });
           }
-          console.log(user)
-          // Log userId and userRole before responding
-          console.log("User ID: ", user.id_user);
-          console.log("User Role: ", user.role);
+          // console.log(user)
+          // console.log("User ID: ", user.id_user);
+          // console.log("User Role: ", user.role);
   
-          // Generate JWT token
           const token = jwt.sign(
-            { userId: user.id_user, userRole: user.role }, // Including userRole in the JWT payload
+            { userId: user.id_user, userRole: user.role }, 
             process.env.JWT_SECRET_KEY,
             { expiresIn: "1d" }
           );
   
-          // Set JWT token as an HttpOnly cookie
           res.cookie("auth_token", token, {
             httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Use true for HTTPS in production
-            maxAge: 86400000, // 1 day in milliseconds
+            secure: process.env.NODE_ENV === "production", 
+            maxAge: 86400000, 
           });
   
-          // Respond with user data (excluding password) and include userRole
           res.status(200).json({
             userId: user.id,
-            userRole: user.role, // Include userRole in the response
+            userRole: user.role,
             message: `Login successful ${user.id_user} & ${user.role}`,
           });
         });
@@ -160,12 +156,9 @@ const validateToken = (req, res, next) => {
   );
   
 
-// Token validation endpoint
 router.get("/validate-token", verifyToken, (req, res) => {
-  // Decode the token and send user info
   const token = req.cookies["auth_token"];
   const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
-  // let decode = jwt.verify(token, process.env.JWT_SECRET_KEY as string) as JwtPayload;
 
   res.status(200).json({
     userId: req.userId,
@@ -174,22 +167,10 @@ router.get("/validate-token", verifyToken, (req, res) => {
   });
 });
 
-// Logout user endpoint
 router.post("/logout", (req, res) => {
-  // Clear the cookie to log out
   res.cookie("auth_token", "", { expires: new Date(0) });
   res.status(200).send();
 });
-// const jwt = require("jsonwebtoken");
 
-
-
-// router.get("/validate-token", validateToken, (req, res) => {
-//   res.status(200).json({
-//     message: "Token is valid",
-//     userId: req.user.userId,
-//     userRole : req.user.role
-//   });
-// });
 
 module.exports = router;

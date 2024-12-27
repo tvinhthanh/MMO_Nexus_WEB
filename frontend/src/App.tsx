@@ -58,7 +58,7 @@ const App = () => {
             {userRole == "2" && (
               <>
                 <Route path="/product" element={<Layout><XemSanPham /></Layout>} />
-                <Route path="/cart" element={<MyCart />} />
+                <Route path="/cart" element={<Layout><MyCart /></Layout>} />
                 <Route path="/mydonhang" element={<Layout><MyDonHang /></Layout>} />
                 <Route path="/product/:productId" element={<Layout><ProductDetail /></Layout>} />
 

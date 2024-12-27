@@ -68,7 +68,7 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/', (req, res) => {
-    const { customer_id, totalAmount, orderStatus, shippingAddress, paymentMethod, store_id } = req.body;
+    const { customer_id, totalAmount, orderStatus, shippingAddress, paymentMethod, store_id, products } = req.body;
     console.log(req.body);
     const orderDate = new Date().toISOString().slice(0, 19).replace('T', ' ');
   
@@ -77,16 +77,22 @@ router.post('/', (req, res) => {
     }
   
     const query = `
-      INSERT INTO orders (customer_id, orderDate, totalAmount, orderStatus, shippingAddress, paymentMethod,store_id)
-      VALUES (?, ?, ?, ?, ?, ?,?)
+      INSERT INTO orders (customer_id, orderDate, totalAmount, orderStatus, shippingAddress, paymentMethod,store_id, products)
+      VALUES (?, ?, ?, ?, ?, ?,?,?)
     `;
   
     // Tạo đơn hàng
-    db.query(query, [customer_id, orderDate, totalAmount, orderStatus, shippingAddress, paymentMethod, store_id], (err, results) => {
+    db.query(query, [customer_id, orderDate, totalAmount, orderStatus, shippingAddress, paymentMethod, store_id, products], (err, results) => {
       if (err) {
         console.error('Lỗi khi tạo đơn hàng: ', err);
         return res.status(500).send('Lỗi khi tạo đơn hàng');
       }
+
+      const productsIncart = JSON.parse(products);
+      // tru so luong
+      productsIncart.forEach(product => {
+        db.query("UPDATE `products` SET `stock`= `stock` - ? WHERE product_id = ? AND (`stock` - ?) >= 0", [product.quantity, product.product_id,product.quantity], (err, updateResults) => {});
+      });
   
       // Cập nhật giỏ hàng sau khi tạo đơn hàng thành công
       const updateCartQuery = `

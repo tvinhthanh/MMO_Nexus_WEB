@@ -102,6 +102,7 @@ const XemSanPham: React.FC = () => {
   }
 
   return (
+    // DANH SÁCH TÌM KIẾM
     <div className="max-w-7xl mx-auto py-10 px-4">
       {
         (searchData.length > 0)?
@@ -169,6 +170,8 @@ const XemSanPham: React.FC = () => {
           </div>
         ))}
       </div>
+
+      {/* DANH SÁCH SẢN PHẨM */}
       <h1 className="text-3xl font-bold mb-6">Danh sách tất cả sản phẩm</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {productData.map((product: any) => (

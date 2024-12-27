@@ -69,27 +69,32 @@ router.get('/:id', (req, res) => {
   });
 });
 
-// Cập nhật cửa hàng
-router.put('/:id', (req, res) => {
-  const { id } = req.params;
-  const { store_name, user_id, address } = req.body;
+router.put('/:storeId', (req, res) => {
+  const storeId = req.params;
+  const { store_name, address, image } = req.body;
+console.log(req.body)
+  if (!store_name || !address) {
+    return res.status(400).json({ error: "Store name and address are required." });
+  }
 
-  const query =
-    'UPDATE stores SET store_name = ?, user_id = ?, address = ? WHERE store_id = ?';
+  // Update the store directly without checking user_id
+  const storeQuery = `
+    UPDATE stores 
+    SET store_name = ?, address = ?, image = ?
+    WHERE store_id = ?`;
 
-  connection.query(
-    query,
-    [store_name, user_id, address, id],
-    (err, results) => {
-      if (err) {
-        return res.status(500).json({ message: 'Error updating store', error: err });
-      }
-      if (results.affectedRows === 0) {
-        return res.status(404).json({ message: 'Store not found for update' });
-      }
-      res.status(200).json({ message: 'Store updated successfully' });
+  connection.query(storeQuery, [store_name, address, image, storeId], (storeErr, storeResult) => {
+    if (storeErr) {
+      console.error("Error updating store:", storeErr);
+      return res.status(500).json({ error: "Failed to update store." });
     }
-  );
+
+    if (storeResult.affectedRows === 0) {
+      return res.status(404).json({ error: "Store not found." });
+    }
+
+    res.json({ message: "Store updated successfully." });
+  });
 });
 
 // Xóa cửa hàng

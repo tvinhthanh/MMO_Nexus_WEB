@@ -1,21 +1,19 @@
 import React, { useState, useEffect } from "react";
-import * as apiClient from "../../api-client"; // Import API client functions
+import * as apiClient from "../../api-client";
 import { useAppContext } from "../../contexts/AppContext";
 import { useNavigate, useParams } from "react-router-dom";
 
 const EditStore: React.FC = () => {
   const { userId } = useAppContext();
   const navigate = useNavigate();
-  const { storeId } = useParams<{ storeId: string }>(); // Use the storeId from the URL
+  const { storeId } = useParams<{ storeId: string }>();
 
-  // States for store data
   const [storeName, setStoreName] = useState("");
   const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
-  const [image, setImage] = useState<File | null>(null); // State for image file
-  const [currentImage, setCurrentImage] = useState(""); // To hold the current image URL
+  const [image, setImage] = useState<File | null>(null);
+  const [currentImage, setCurrentImage] = useState("");
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  // Fetch store data on initial render
   useEffect(() => {
     const fetchStoreData = async () => {
       try {
@@ -23,8 +21,7 @@ const EditStore: React.FC = () => {
         const storeData = await apiClient.getStoreById(storeId);
         setStoreName(storeData.store_name);
         setAddress(storeData.address);
-        setPhone(storeData.phone);
-        setCurrentImage(storeData.image); // Assuming storeData contains the image URL
+        setCurrentImage(storeData.image);
       } catch (error) {
         console.error("Error fetching store data:", error);
         alert("Failed to fetch store data");
@@ -33,47 +30,51 @@ const EditStore: React.FC = () => {
     fetchStoreData();
   }, [storeId]);
 
-  // Handle image file change
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files ? event.target.files[0] : null;
     if (file) {
       setImage(file);
+      setImagePreview(URL.createObjectURL(file));
     }
   };
 
-  // Handle form submission
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    // Check if userId exists
     if (!userId) {
       alert("User ID is missing. Please log in.");
       return;
     }
 
-    // Validate that all fields are filled
-    if (!storeName || !address || !phone) {
+    if (!storeName || !address) {
       alert("Please fill in all fields.");
       return;
     }
 
-    // Create FormData object to send image and other form data
-    const formData = new FormData();
-    formData.append("user_id", userId as string);
-    formData.append("store_name", storeName);
-    formData.append("address", address);
-    formData.append("phone", phone);
-    formData.append("store_id", storeId as string);
+    const payload: any = {
+      user_id: userId,
+      store_name: storeName,
+      address: address,
+      image: currentImage,
+    };
 
-    // Append image only if selected
     if (image) {
-      formData.append("image", image);
-    } else {
-      formData.append("image", currentImage); // Keep the current image if no new one is uploaded
-    }
+      const reader = new FileReader();
 
+      reader.onloadend = () => {
+        payload.image = reader.result as string;
+        sendStoreData(payload);
+      };
+
+      reader.readAsDataURL(image);
+    } else {
+      sendStoreData(payload);
+    }
+  };
+
+  const sendStoreData = async (payload: any) => {
     try {
-      await apiClient.updateStoreById(storeId as string, formData); // Send FormData to API client
+      const response = await apiClient.UpdateStore(storeId as string, payload);
       alert("Store updated successfully!");
       navigate(`/store/${storeId}`);
     } catch (error) {
@@ -114,7 +115,6 @@ const EditStore: React.FC = () => {
           />
         </div>
 
-        {/* Add image input */}
         <div className="flex flex-col">
           <label htmlFor="image" className="text-sm font-semibold">
             Hình ảnh:
@@ -124,15 +124,21 @@ const EditStore: React.FC = () => {
             type="file"
             onChange={handleImageChange}
             className="border border-gray-300 px-3 py-2 rounded-md focus:outline-none focus:border-blue-500"
-            accept="image/*" // Restrict file types to images
+            accept="image/*"
           />
         </div>
 
-        {/* Show current image if available */}
-        {currentImage && (
+        {currentImage && !imagePreview && (
           <div className="flex flex-col">
             <label className="text-sm font-semibold">Hình ảnh hiện tại:</label>
             <img src={currentImage} alt="Store" className="w-40 h-40 object-cover rounded-md" />
+          </div>
+        )}
+
+        {imagePreview && (
+          <div className="flex flex-col">
+            <label className="text-sm font-semibold">Hình ảnh chọn mới:</label>
+            <img src={imagePreview} alt="Preview" className="w-40 h-40 object-cover rounded-md" />
           </div>
         )}
 

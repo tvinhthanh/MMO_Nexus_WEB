@@ -373,7 +373,8 @@ router.put('/clear/:userId', async (req, res) => {
   
     // Truy vấn để tìm giỏ hàng của người dùng
     const findCartQuery = 'SELECT * FROM carts WHERE user_id = ?';
-    connection.query(findCartQuery, [userId], (err, rows) => {
+    connection.query(findCartQuery, [userId], async (err, rows) => {
+
       if (err) {
         console.error('Lỗi khi tìm giỏ hàng:', err);
         return res.status(500).json({ error: 'Lỗi khi tìm giỏ hàng' });
@@ -385,9 +386,10 @@ router.put('/clear/:userId', async (req, res) => {
   
       const cart = rows[0];
       const products = JSON.parse(cart.products); // Giả sử cột `products` là kiểu JSON
-  
+
       // Lọc ra sản phẩm cần xóa
-      const updatedProducts = products.filter(item => item.product_id !== productId);
+      const updatedProducts = await products.filter(item => item.product_id != productId);
+
   
       // Cập nhật lại giỏ hàng
       const updateCartQuery = 'UPDATE carts SET products = ? WHERE user_id = ?';
