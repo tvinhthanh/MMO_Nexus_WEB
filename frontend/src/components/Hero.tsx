@@ -40,7 +40,6 @@ const Hero = () => {
         backgroundBlendMode: "overlay",
       }}
     >
-      {/* Giới hạn nội dung bên trong */}
       <div className="container mx-auto flex flex-wrap items-center justify-between">
         {/* Left content */}
         <div className="w-full md:w-1/2 text-center md:text-left space-y-4">
@@ -56,11 +55,9 @@ const Hero = () => {
           </button>
         </div>
 
-        {/* Right content – các box số liệu */}
+        {/* Right content */}
         <div className="w-full md:w-1/2 flex justify-center mt-10 md:mt-0">
           <div className="relative w-full max-w-lg min-h-[500px]">
-
-            {/* Likes */}
             <StatCard
               icon={<FaHeart />}
               title="Likes"
@@ -69,8 +66,6 @@ const Hero = () => {
               change="+2.1% vs last 7 days"
               color="red"
             />
-
-            {/* Followers Gained */}
             <StatCard
               icon={<FaUser className="text-xs" />}
               title="Followers gained"
@@ -81,8 +76,6 @@ const Hero = () => {
               color="green"
               border
             />
-
-            {/* Chart */}
             <div className="absolute top-48 left-0 bg-white rounded-xl shadow-xl p-6 w-72 min-h-[140px] flex flex-col gap-2">
               <h4 className="text-md font-semibold text-gray-700">Followers Stats</h4>
               <img
@@ -91,8 +84,6 @@ const Hero = () => {
                 className="w-full h-36 object-contain"
               />
             </div>
-
-            {/* Reach */}
             <StatCard
               icon={<FaDownload />}
               title="Reach"
@@ -105,7 +96,7 @@ const Hero = () => {
         </div>
       </div>
 
-      {/* Bottom block thống kê tổng */}
+      {/* Bottom stats */}
       <div className="mt-20 flex justify-center">
         <div className="bg-white p-6 rounded-lg shadow-lg flex flex-wrap justify-around w-full md:w-3/4 gap-6">
           <SummaryItem icon={<FaPeopleGroup />} value={15000} label="Active User" color="purple" />
@@ -117,7 +108,7 @@ const Hero = () => {
   );
 };
 
-// Reusable components
+// StatCard with safe Tailwind colors
 const StatCard = ({
   icon,
   title,
@@ -139,16 +130,22 @@ const StatCard = ({
   small?: boolean;
   border?: boolean;
 }) => {
-  const baseClass = `absolute ${position} bg-white ${
-    border ? `border border-${color}-400` : ``
-  } rounded-xl shadow-md p-4 ${
+  const colorMap: Record<string, string> = {
+    red: "bg-red-100 text-red-500 border-red-400",
+    green: "bg-green-100 text-green-600 border-green-400",
+    orange: "bg-orange-100 text-orange-600 border-orange-400",
+  };
+
+  const colors = colorMap[color] || "bg-gray-100 text-gray-600";
+
+  const boxClass = `absolute ${position} bg-white rounded-xl shadow-md p-4 ${
     small ? "w-52 min-h-[90px]" : "w-60 min-h-[140px]"
-  } flex flex-col gap-1`;
+  } flex flex-col gap-1 ${border ? colorMap[color]?.split(" ").find(c => c.startsWith("border")) : ""}`;
 
   return (
-    <div className={baseClass}>
+    <div className={boxClass}>
       <div className="flex items-center gap-2">
-        <div className={`w-8 h-8 bg-${color}-100 text-${color}-600 flex items-center justify-center rounded-full`}>
+        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${colors.split(" ").slice(0, 2).join(" ")}`}>
           {icon}
         </div>
         <span className="text-sm font-semibold text-gray-600">{title}</span>
@@ -166,6 +163,7 @@ const StatCard = ({
   );
 };
 
+// SummaryItem with fixed color class map
 const SummaryItem = ({
   icon,
   value,
@@ -176,18 +174,28 @@ const SummaryItem = ({
   value: number;
   label: string;
   color: string;
-}) => (
-  <div className="flex gap-x-4 items-center">
-    <div className={`w-28 h-28 bg-${color}-200 rounded-lg flex items-center justify-center text-${color}-700 text-xl`}>
-      {icon}
+}) => {
+  const colorMap: Record<string, string> = {
+    purple: "bg-purple-200 text-purple-700",
+    yellow: "bg-yellow-200 text-yellow-700",
+    green: "bg-green-200 text-green-700",
+  };
+
+  const colors = colorMap[color] || "bg-gray-200 text-gray-700";
+
+  return (
+    <div className="flex gap-x-4 items-center">
+      <div className={`w-28 h-28 rounded-lg flex items-center justify-center text-xl ${colors}`}>
+        {icon}
+      </div>
+      <div className="flex flex-col items-start">
+        <span className="text-4xl font-extrabold text-gray-900">
+          <Counter value={value} />
+        </span>
+        <p className="text-xl text-gray-600">{label}</p>
+      </div>
     </div>
-    <div className="flex flex-col items-start">
-      <span className="text-4xl font-extrabold text-gray-900">
-        <Counter value={value} />
-      </span>
-      <p className="text-xl text-gray-600">{label}</p>
-    </div>
-  </div>
-);
+  );
+};
 
 export default Hero;
