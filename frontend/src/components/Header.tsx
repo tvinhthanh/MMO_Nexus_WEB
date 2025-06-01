@@ -1,128 +1,49 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useQuery } from "react-query";
-import { useAppContext } from "../contexts/AppContext";
-import SignOutButton from "./SignOutButton";
-import * as apiClient from "../api-client";
-
 
 const Header = () => {
-  const { isLoggedIn, userRole, setListSearch } = useAppContext();
-  const [searchQuery, setSearchQuery] = useState("");
-  const navigate = useNavigate();
-
-  const { data: searchData} = useQuery(
-    ["searchProducts", searchQuery],
-    () => apiClient.searchProducts(searchQuery),
-    {
-      enabled: !!searchQuery, // Chỉ chạy query khi searchQuery không rỗng
-      onError: (error) => {
-        console.error("Error fetching products:", error);
-      },
-      onSuccess: (data) => {
-        console.log("Search successful:");
-        console.log(data);
-        setListSearch(data);
-      },
-    }
-  );
-
-  const handleSearch = (e: any) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      navigate(`/search?query=${searchQuery}`);
-    }
-  };
-
   return (
-    <nav className="bg-gray-800 shadow-md relative z-10">
-      <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        {/* Logo */}
-        <div className="text-white text-2xl font-bold">
-          <Link to="/">ShopLogo</Link>
+    <header className="bg-white shadow-md z-10 relative">
+      <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center flex-wrap">
+        {/* Logo + Brand */}
+        <div className="flex items-center space-x-2">
+          <img src="/logo.png" alt="Logo" className="h-14 w-auto" />
+          {/* <span className="text-2xl font-bold text-[#8976FD]">MMOLogin</span> */}
         </div>
 
-        {/* Tìm kiếm sản phẩm */}
-        <div onSubmit={handleSearch} className="flex items-center">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm kiếm sản phẩm..."
-            className="px-4 py-2 rounded-l-md text-gray-700"
-          />
-          <button
-            onClick={handleSearch}
-            className="bg-black text-white px-6 py-3 rounded-lg hover:bg-green-600 transition-colors"
-          >
-            Tìm kiếm
-          </button>
-        </div>
+        {/* Navigation menu */}
+        <nav className="flex space-x-6 items-center">
+          {/* Dropdown item */}
+          <a href="/" className="text-gray-700 hover:text-[#8976FD]">Home</a>
+          <Dropdown label="Services" items={["Submenu 1", "Submenu 2"]} />
+          <Dropdown label="Download" items={["Windows", "MacOS", "Linux"]} />
+          <Dropdown label="Blog" items={["Tech", "Design", "Marketing"]} />
+          <a href="#" className="text-gray-700 hover:text-[#8976FD]">Contact Us</a>
+        </nav>
 
-        {/* Navigation Links */}
-        <ul className="hidden md:flex space-x-8 text-gray-300 font-medium">
-          <li>
-            <Link to="/" className="hover:text-green-400">
-              Trang Chủ
-            </Link>
-          </li>
-          {/* Conditional Rendering for different user roles */}
-          {isLoggedIn && userRole == "1" ? (
-            <>
-              <Link to="/sanpham" className="hover:text-green-400">
-                Sản Phẩm
-              </Link>
-              <li>
-                <Link to="/categories" className="hover:text-green-400">
-                  Danh Mục
-                </Link>
-              </li>
-              <li>
-                <Link to="/quanlydonhang" className="hover:text-green-400">
-                  Hóa Đơn
-                </Link>
-              </li>
-              <li>
-                <Link to="/store" className="hover:text-green-400">
-                  Cửa hàng
-                </Link>
-              </li>
-              <li>
-                <SignOutButton />
-              </li>
-            </>
-          ) : isLoggedIn && userRole == "2" ? (
-            <>
-              <li>
-                <Link to="/product" className="hover:text-green-400">
-                  Sản Phẩm
-                </Link>
-              </li>
-              <li>
-                <Link to="/mydonhang" className="hover:text-green-400">
-                  Đơn Hàng Của Tôi
-                </Link>
-              </li>
-              <li>
-                <Link to="/cart" className="hover:text-green-400">
-                  Giỏ Hàng
-                </Link>
-              </li>
-              <li>
-                <SignOutButton />
-              </li>
-            </>
-          ) : (
-            <li>
-              <Link to="/login" className="hover:text-green-400">
-                Đăng nhập
-              </Link>
-            </li>
-          )}
-        </ul>
+        {/* Action buttons */}
+        <div className="space-x-4 mt-4 md:mt-0">
+          <a href="/login" className="px-4 py-2 text-[#8976FD] border border-[#8976FD] rounded-lg hover:bg-[#8976FD] hover:text-white transition">Login</a>
+          <a href="/register" className="px-4 py-2 bg-[#8976FD] text-white rounded-lg hover:bg-[#7058E3] transition">Register</a>
+        </div>
       </div>
-    </nav>
+    </header>
   );
 };
+
+const Dropdown = ({ label, items }: { label: string; items: string[] }) => (
+  <div className="relative group">
+    <a href="#" className="text-gray-700 hover:text-[#8976FD]">{label}</a>
+    <div className="absolute top-full left-0 bg-white shadow-lg rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 w-40 mt-2 z-20">
+      {items.map((item, idx) => (
+        <a
+          key={idx}
+          href="/"
+          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+        >
+          {item}
+        </a>
+      ))}
+    </div>
+  </div>
+);
 
 export default Header;

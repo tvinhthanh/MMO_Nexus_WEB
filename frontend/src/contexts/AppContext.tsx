@@ -1,126 +1,86 @@
-import React, { useContext, useState } from "react";
-import Toast from "../components/Toast";
-import { useQuery } from "react-query";
-import * as apiClient from "../api-client";
-import { loadStripe, Stripe } from "@stripe/stripe-js";
+import React, { createContext, useContext, useState } from "react";
 
-// Stripe public key for loading Stripe
-const STRIPE_PUB_KEY = import.meta.env.VITE_STRIPE_PUB_KEY || "";
-
-// Khai báo Toast message
 type ToastMessage = {
   message: string;
   type: "SUCCESS" | "ERROR";
 };
+
 interface Product {
-  category_id: number; // ID của danh mục sản phẩm
-  createdAt: string; // Thời gian tạo sản phẩm (ISO string)
-  description: string; // Mô tả sản phẩm
-  image: string; // URL hình ảnh của sản phẩm
-  price: string; // Giá sản phẩm (có thể là số nếu muốn)
-  product_id: number; // ID sản phẩm
-  product_name: string; // Tên sản phẩm
-  stock: number; // Số lượng tồn kho
-  store_id: number; // ID cửa hàng
-  updatedAt: string; // Thời gian cập nhật sản phẩm (ISO string)
+  category_id: number;
+  createdAt: string;
+  description: string;
+  image: string;
+  price: string;
+  product_id: number;
+  product_name: string;
+  stock: number;
+  store_id: number;
+  updatedAt: string;
 }
-//Khai báo AppContext
-type AppContext = {
-  showToast: (toastMessage: ToastMessage) => void;
+
+type AppContextType = {
+  showToast: (toast: ToastMessage) => void;
   isLoggedIn: boolean;
-  stripePromise: Promise<Stripe | null>;
+  stripePromise: any;
   userId: string | null;
-  searchData: Product[];
   userRole: string | null;
   storeId: string | null;
-  setListSearch: (data:any) => void,
-  setUserData: (id: string, userRole: string) => void; 
-  setStoreId: (storeId: string) => void; 
+  searchData: Product[];
+  setUserData: (id: string, role: string) => void;
+  setStoreId: (id: string) => void;
+  setListSearch: (data: any) => void;
 };
 
-const AppContext = React.createContext<AppContext | undefined>(undefined);
-
-// Khởi tạo Stripe promise if the key exists
-const stripePromise = STRIPE_PUB_KEY ? loadStripe(STRIPE_PUB_KEY) : Promise.resolve(null);
+const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export const AppContextProvider = ({ children }: { children: React.ReactNode }) => {
   const [toast, setToast] = useState<ToastMessage | undefined>(undefined);
   const [userId, setUserId] = useState<string | null>(null);
-  const [searchData, setSearchData] = useState([]);
   const [userRole, setUserRole] = useState<string | null>(null);
   const [storeId, setStoreId] = useState<string | null>(null);
+  const [searchData, setSearchData] = useState<Product[]>([]);
 
-  const { isError, isLoading, data } = useQuery("validateToken", apiClient.validateToken, {
-    retry: false,
-    onSuccess: (data) => {
-      if (data?.userId && data?.userRole) {
-        setUserId(data.userId); 
-        setUserRole(data.userRole); 
-      }
-    },
-  });
+  const showToast = (toast: ToastMessage) => setToast(toast);
+  const isLoggedIn = !!userId;
+  const stripePromise = Promise.resolve(null);
 
-  //Thực hiện khi userRole là "1"
-  const { data: storeData } = useQuery(
-    "fetchStore",
-    () => apiClient.fetchMyStores(userId ?? ""),
-    {
-      enabled: !!userId && userRole == "1",
-      onSuccess: (data) => {
-        if (data && data.length > 0) {
-          setStoreId(data[0].store_id);
-        }
-      },
-    }
-  );
-
-  const isLoggedIn = !isError && !isLoading;
-  const setUserData = (id: string, userRole: string) => {
+  const setUserData = (id: string, role: string) => {
     setUserId(id);
-    setUserRole(userRole);
+    setUserRole(role);
   };
 
-  const setListSearch = (data : any) => {
-    setSearchData(data.results);
-    console.log('da doi du lieu');
-    console.log(data.results);
-
-    
+  const setListSearch = (data: any) => {
+    setSearchData(data);
+    console.log("List search set:", data);
   };
 
-  console.log(userId);
-  console.log(storeId);
+  const setStoreIdWrapper = (id: string) => setStoreId(id);
 
   return (
     <AppContext.Provider
       value={{
-        showToast: (toastMessage) => {
-          setToast(toastMessage); 
-        },
+        showToast,
         isLoggedIn,
-        stripePromise, 
-        userId, 
-        searchData,
+        stripePromise,
+        userId,
         userRole,
-        storeId, 
-        setListSearch,
-        setStoreId, 
+        storeId,
+        searchData,
         setUserData,
+        setStoreId: setStoreIdWrapper,
+        setListSearch,
       }}
     >
       {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(undefined)}
-        />
+        <div className={`fixed top-4 right-4 px-4 py-2 rounded shadow ${toast.type === "SUCCESS" ? "bg-green-500 text-white" : "bg-red-500 text-white"}`}>
+          {toast.message}
+        </div>
       )}
-      {children} {/* Render child components */}
+      {children}
     </AppContext.Provider>
   );
 };
 
-// Custom hook to use the app context
 export const useAppContext = () => {
   const context = useContext(AppContext);
   if (!context) {
